@@ -34,16 +34,15 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		n+= "0";
 	lx= lx/Number(n);
 	ly= ly/Number(n);
-	while( ly<5 || ly>5.5){
-		if(Math.abs(lx)>5.5)
-			break;
-		lx= lx+ (ly<5? lx*0.05: -lx*0.05)
-		ly= ly+ (ly<5? ly*0.05: -ly*0.05)
+	while(  (ly<3 || ly>3.5) && (Math.abs(ly)<3 || Math.abs(ly)>3.5)){
+		lx= lx+ (ly<3? lx*0.05: -lx*0.05)
+		ly= ly+ (ly<3? ly*0.05: -ly*0.05)
 	}
 	this.direction= [lx, ly];
 	var ax= this.x;
 	var ay= this.y;
 	var over= false;
+	console.log(lx, ly);
 	while( (ax+this.radius<=canvas.width || ax>=0) || (ay+this.radius<=canvas.height || ay>=0) ){
 		ax+= lx;
 		ay-= ly;
@@ -57,7 +56,19 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 			ly*= -1;
 			over= true;
 		}
-		if(over) break;
+		var B= false;
+		for(var i=0, len= blocks.length; i<len; i++){
+			let b= blocks[i];
+			let X_min= b.l*b.w;
+			let X_max= X_min+b.w;
+			let Y_min= b.t*b.h;
+			let Y_max= Y_min+b.h;
+			if(X_min <= ax+this.radius && ax-this.radius <= X_max && Y_min <= ay+this.radius && ay-this.radius <= Y_max){
+				B= true;
+				break;
+			}
+		}
+		if(over || B) break;
 	}
 	tx= ax;
 	ty= ay;
@@ -100,18 +111,37 @@ ball.prototype.Shoot= function (){
 		this.direction[1]= this.direction[1]*-1;
 	}
 	for(var i=0, len= blocks.length; i<len; i++){
-		var b= blocks[i];
-		X_min= b.l;
-		X_max= b.l+b.w;
-		Y_min= b.t;
-		Y_max= b.t+b.h+this.radius;
-		if(X_min<=this.x-this.radius && this.x+this.radius<=X_max && this.y <= Y_max){
-			this.y= Y_max;
+		if(blocks[i] == undefined)
+			continue;
+		let b= blocks[i];
+		let X_min= b.l*b.w;
+		let X_max= X_min+b.w;
+		let Y_min= b.t*b.h;
+		let Y_max= Y_min+b.h+this.radius;
+
+		if(X_min <= this.x-this.radius && this.x+this.radius <= X_max && Y_min <= this.y+this.radius && this.y-this.radius <= Y_max){
+			this.y= Math.abs(Y_min-this.y+this.radius) < Math.abs(Y_max-this.y-this.radius)? Y_min: Y_max;
 			this.direction[1]= this.direction[1]*-1;
-			b.turn--;
-			if(b.turn==0)
+			b.cnt--;
+			if(b.cnt<=0)
+				blocks.splice(i, 1)
+		}else if(Y_min <= this.y+this.radius && this.y-this.radius <= Y_max && X_min <= this.x+this.radius && this.x-this.radius <= X_max){
+			this.x= Math.abs(X_min-this.x+this.radius) < Math.abs(X_max-this.x-this.radius)? X_min: X_max;
+			this.direction[0]= this.direction[0]*-1;
+			b.cnt--;
+			if(b.cnt<=0)
 				blocks.splice(i, 1)
 		}
+
+		// if(
+		// 	Y_min <= this.y+this.radius && this.y+this.radius <= Y_max && X_min <= this.x+this.radius){
+		// 	this.x= X_min;
+		// 	this.direction[0]= this.direction[0]*-1;
+		// 	b.cnt--;
+		// 	if(b.cnt<=0){
+		// 		blocks.splice(i, 1)
+		// 	}
+		// }
 	}
 	for(var i=0, len= blocks.length; i<len; i++)
 		blocks[i].draw();
@@ -127,27 +157,39 @@ ball.prototype.Shoot= function (){
 	}, 1000 / FPS);
 }
 let blocks= [];
-
-function Block (t){
+const C= ["#91a7ff", "#748ffc", "#5c7cfa", "#4c6ef5", "#4263eb", "#3b5bdb", "#364fc7"];
+function Block (option){
 	this.w= 100;
 	this.h= 40;
-	this.l= 0;
-	this.t= 0;
-	this.c= "red";
-	this.turn= t;
+	this.l= option.l;
+	this.t= option.t;
+	this.cnt= option.cnt;
+	this.c= C[Math.floor(option.cnt/10)>=6? 6: Math.floor(option.cnt/10)];
 }
-Block.prototype.draw = function() {
+Block.prototype.draw = function (){
 	ctx.save();
 	ctx.fillStyle= this.c;
 	ctx.fillRect(this.l*this.w, this.t*this.h, this.w, this.h);
-	ctx.fill
+	ctx.fillStyle= "#000";
+	ctx.font = "20px sans-serif";
+	ctx.textAlign = "center";
+	ctx.fillText(this.cnt, this.l*this.w+this.w/2, this.t*this.h+this.h/2+5); 
 	ctx.restore();
 };
 window.onload= function (){
-	let Ball= new ball();
-	blocks.push(new Block(turn));
+	let Ball= new ball(570);
+	blocks.push(new Block({l: 0, t: 5, cnt: 0}));
+	blocks.push(new Block({l: 5, t: 5, cnt: 0}));
+	// blocks.push(new Block({l: 1, t: 0, cnt: 10}));
+	// blocks.push(new Block({l: 2, t: 0, cnt: 20}));
+	// blocks.push(new Block({l: 3, t: 0, cnt: 30}));
+	// blocks.push(new Block({l: 4, t: 0, cnt: 40}));
+	// blocks.push(new Block({l: 5, t: 0, cnt: 50}));
+	// blocks.push(new Block({l: 0, t: 1, cnt: 60}));
+	// blocks.push(new Block({l: 1, t: 1, cnt: 70}));
 	Ball.draw();
-	blocks[0].draw();
+	for(var i= 0, len= blocks.length; i<len; i++)
+		blocks[i].draw();
 
 	canvas.addEventListener("mousedown", function (e){
 		if(shot)
