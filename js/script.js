@@ -14,12 +14,19 @@ let tx=0; // 공이 닿을 x 좌표값
 let ty= 0; // 공이 닿을 y 좌표값
 let down= false;
 let shot= false;
+function Checkdistance(x1, y1, x2, y2){
+	let x= Math.abs(x1-x2);
+	let y= Math.abs(y1-y2);
+	let result= Math.sqrt(x*x+y*y);
+
+	return 10 >= result;
+}
 function clear (){ctx.clearRect(0,0,canvas.width,canvas.height);}
 function ball(x, y){
 	this.path= new Path2D();
 	this.radius= 10;
-	this.x= x? x: canvas.width / 2;
-	this.y= y? y: canvas.height-10;
+	this.x= x? x: W / 2;
+	this.y= y? y: H-10;
 	this.direction= [0, 0];
 	this.draw= (c= "#4BBCF4", x= this.x, y= this.y) =>{
 		this.path= new Path2D();
@@ -34,7 +41,10 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		n+= "0";
 	lx= lx/Number(n);
 	ly= ly/Number(n);
-	while(  (ly<3 || ly>3.5) && (Math.abs(ly)<3 || Math.abs(ly)>3.5)){
+	console.log(lx);
+	while(  (ly<3 || ly>3.5) ){
+		if(Math.abs(lx)>4)
+			break;
 		lx= lx+ (ly<3? lx*0.05: -lx*0.05)
 		ly= ly+ (ly<3? ly*0.05: -ly*0.05)
 	}
@@ -42,7 +52,6 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 	var ax= this.x;
 	var ay= this.y;
 	var over= false;
-	console.log(lx, ly);
 	while( (ax+this.radius<=canvas.width || ax>=0) || (ay+this.radius<=canvas.height || ay>=0) ){
 		ax+= lx;
 		ay-= ly;
@@ -59,21 +68,39 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		var B= false;
 		for(var i=0, len= blocks.length; i<len; i++){
 			let b= blocks[i];
-			let X_min= b.l*b.w;
-			let X_max= X_min+b.w;
-			let Y_min= b.t*b.h;
-			let Y_max= Y_min+b.h;
-			if(X_min <= ax+this.radius && ax-this.radius <= X_max && Y_min <= ay+this.radius && ay-this.radius <= Y_max){
+			let pointX= getPoint(ax, b.X_min, b.X_max);
+			let pointY= getPoint(ay, b.Y_min, b.Y_max);
+			if(Checkdistance(ax, ay, pointX, pointY)){
+				if(pointX == b.X_max){
+					ax= b.X_max+10;
+				}else if(pointX == b.X_min){
+					ax= b.X_min-10;
+				}
+				if(pointY == b.Y_max){
+					ay= b.Y_max+10;
+				}else if(pointY == b.Y_min){
+					ay= b.Y_min-10;
+				}
 				B= true;
 				break;
 			}
 		}
-		if(over || B) break;
+		if(over || B){
+			break;	
+		} 
 	}
 	tx= ax;
 	ty= ay;
 	Move_cnt++;
-	this.DrawPath(Move_cnt);
+	DrawPath= true;
+}
+function getPoint(v, min, max){
+	if(v <= min)
+		return min
+	else if(v >= max)
+		return max
+	else
+		return v;
 }
 ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 	if( !down || Move_cnt != c) // 방향이 다르거나 마우스클릭이 안돼있으면 return
@@ -91,13 +118,8 @@ ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 	for(var i=0; i< blocks.length; i++){
 		blocks[i].draw();
 	}
-	var self= this;
-	setTimeout(_ =>{
-		if( !down || Move_cnt != c)
-			return;
-		self.DrawPath(c);
-	}, 1000 / FPS);
 }
+let DrawPath= false;
 ball.prototype.Shoot= function (){
 	clear();
 	this.x+= this.direction[0]*2;
@@ -114,34 +136,24 @@ ball.prototype.Shoot= function (){
 		if(blocks[i] == undefined)
 			continue;
 		let b= blocks[i];
-		let X_min= b.l*b.w;
-		let X_max= X_min+b.w;
-		let Y_min= b.t*b.h;
-		let Y_max= Y_min+b.h+this.radius;
+		let pointX= getPoint(this.x, b.X_min, b.X_max);
+		let pointY= getPoint(this.y, b.Y_min, b.Y_max);
+		if(Checkdistance(this.x, this.y, pointX, pointY)){
+			console.log("닿음");
+			console.log(pointX, pointY);
+			if( b.X_min < pointX && pointX < b.X_max){
+					this.direction[1]*=-1;
+			}
+			if( b.Y_min < pointY && pointY < b.Y_max){
+					this.direction[0]*=-1;
+			}
 
-		if(X_min <= this.x-this.radius && this.x+this.radius <= X_max && Y_min <= this.y+this.radius && this.y-this.radius <= Y_max){
-			this.y= Math.abs(Y_min-this.y+this.radius) < Math.abs(Y_max-this.y-this.radius)? Y_min: Y_max;
-			this.direction[1]= this.direction[1]*-1;
 			b.cnt--;
 			if(b.cnt<=0)
 				blocks.splice(i, 1)
-		}else if(Y_min <= this.y+this.radius && this.y-this.radius <= Y_max && X_min <= this.x+this.radius && this.x-this.radius <= X_max){
-			this.x= Math.abs(X_min-this.x+this.radius) < Math.abs(X_max-this.x-this.radius)? X_min: X_max;
-			this.direction[0]= this.direction[0]*-1;
-			b.cnt--;
-			if(b.cnt<=0)
-				blocks.splice(i, 1)
+		}else{
+			// 그냥감
 		}
-
-		// if(
-		// 	Y_min <= this.y+this.radius && this.y+this.radius <= Y_max && X_min <= this.x+this.radius){
-		// 	this.x= X_min;
-		// 	this.direction[0]= this.direction[0]*-1;
-		// 	b.cnt--;
-		// 	if(b.cnt<=0){
-		// 		blocks.splice(i, 1)
-		// 	}
-		// }
 	}
 	for(var i=0, len= blocks.length; i<len; i++)
 		blocks[i].draw();
@@ -149,6 +161,7 @@ ball.prototype.Shoot= function (){
 	if(this.y+this.radius>=canvas.height){
 		this.draw();
 		shot = false;
+		updateBlock();
 		return;
 	}
 	var self= this;
@@ -156,40 +169,59 @@ ball.prototype.Shoot= function (){
 		self.Shoot();
 	}, 1000 / FPS);
 }
-let blocks= [];
+function display(){
+	clear();
+	Ball.draw();
+	for(var i=0, len= blocks.length; i<len; i++)
+		if(blocks[i] != undefined)
+			blocks[i].draw();
+	if(DrawPath){
+		Ball.DrawPath(Move_cnt);
+	}
+	requestAnimationFrame(function (){
+		display();
+	})
+}
+function updateBlock(){
+	for(var i=0, len= blocks.length; i<len; i++){
+		blocks[i].t++;
+		if(blocks[i].t==8)
+			end();
+	}
+	blocks.push(new Block({l: Math.floor(Math.random()*6), t: 0, cnt: turn}));
+}
 const C= ["#91a7ff", "#748ffc", "#5c7cfa", "#4c6ef5", "#4263eb", "#3b5bdb", "#364fc7"];
 function Block (option){
-	this.w= 100;
-	this.h= 40;
+	this.w= W/6;
+	this.h= H/9;
 	this.l= option.l;
 	this.t= option.t;
+
+	this.X_min= this.l*this.w+1;
+	this.Y_min= this.t*this.h+1;
+	this.X_max= this.X_min+this.w-2;
+	this.Y_max= this.Y_min+this.h-2;
+
 	this.cnt= option.cnt;
 	this.c= C[Math.floor(option.cnt/10)>=6? 6: Math.floor(option.cnt/10)];
 }
 Block.prototype.draw = function (){
 	ctx.save();
 	ctx.fillStyle= this.c;
-	ctx.fillRect(this.l*this.w, this.t*this.h, this.w, this.h);
+	ctx.fillRect(this.l*this.w+1, this.t*this.h+1, this.w-2, this.h-2);
 	ctx.fillStyle= "#000";
 	ctx.font = "20px sans-serif";
 	ctx.textAlign = "center";
-	ctx.fillText(this.cnt, this.l*this.w+this.w/2, this.t*this.h+this.h/2+5); 
+	ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
 	ctx.restore();
 };
+
+let Ball= new ball();
+let blocks= [];
+
 window.onload= function (){
-	let Ball= new ball(570);
-	blocks.push(new Block({l: 0, t: 5, cnt: 0}));
-	blocks.push(new Block({l: 5, t: 5, cnt: 0}));
-	// blocks.push(new Block({l: 1, t: 0, cnt: 10}));
-	// blocks.push(new Block({l: 2, t: 0, cnt: 20}));
-	// blocks.push(new Block({l: 3, t: 0, cnt: 30}));
-	// blocks.push(new Block({l: 4, t: 0, cnt: 40}));
-	// blocks.push(new Block({l: 5, t: 0, cnt: 50}));
-	// blocks.push(new Block({l: 0, t: 1, cnt: 60}));
-	// blocks.push(new Block({l: 1, t: 1, cnt: 70}));
-	Ball.draw();
-	for(var i= 0, len= blocks.length; i<len; i++)
-		blocks[i].draw();
+	blocks.push(new Block({l: 0, t: 0, cnt: turn}));
+	blocks.push(new Block({l: 1, t: 0, cnt: turn}));
 
 	canvas.addEventListener("mousedown", function (e){
 		if(shot)
@@ -218,6 +250,7 @@ window.onload= function (){
 		if(down){
 			down= false;
 			shot= true;
+			DrawPath= false;
 			ctx.lineDashOffset= 0;
 			Ball.Shoot();
 			turn++;
@@ -229,6 +262,7 @@ window.onload= function (){
 			FPS= this.value*60
 		}
 	}
+	display();
 }
 	
 // function DrawLinePoint(x, y, angle, length){
