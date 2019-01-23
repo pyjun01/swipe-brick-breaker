@@ -36,22 +36,24 @@ function ball(x, y){
 	}
 }
 ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
+	var min_range= 1;
+	var max_range= 1.5;
 	var n= "1";
 	for(var i=0; i<String(Math.max(Math.abs(lx), Math.abs(ly))).split(".")[0].length-1; i++)
 		n+= "0";
 	lx= lx/Number(n);
 	ly= ly/Number(n);
-	console.log(lx);
-	while(  (ly<3 || ly>3.5) ){
+	while(  (ly < min_range || ly > max_range) ){
 		if(Math.abs(lx)>4)
 			break;
-		lx= lx+ (ly<3? lx*0.05: -lx*0.05)
-		ly= ly+ (ly<3? ly*0.05: -ly*0.05)
+		lx= lx+ (ly<min_range? lx*0.05: -lx*0.05)
+		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05)
 	}
 	this.direction= [lx, ly];
 	var ax= this.x;
 	var ay= this.y;
 	var over= false;
+	var B= false;
 	while( (ax+this.radius<=canvas.width || ax>=0) || (ay+this.radius<=canvas.height || ay>=0) ){
 		ax+= lx;
 		ay-= ly;
@@ -65,21 +67,17 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 			ly*= -1;
 			over= true;
 		}
-		var B= false;
-		for(var i=0, len= blocks.length; i<len; i++){
+		for(var i=0, len= blocks.length; i<len; i++){ // 벽에 닿았는지 체크
 			let b= blocks[i];
 			let pointX= getPoint(ax, b.X_min, b.X_max);
 			let pointY= getPoint(ay, b.Y_min, b.Y_max);
 			if(Checkdistance(ax, ay, pointX, pointY)){
-				if(pointX == b.X_max){
-					ax= b.X_max+10;
-				}else if(pointX == b.X_min){
-					ax= b.X_min-10;
-				}
 				if(pointY == b.Y_max){
-					ay= b.Y_max+10;
-				}else if(pointY == b.Y_min){
-					ay= b.Y_min-10;
+					if(ax <= b.X_min){
+						ay= ax <= b.X_min? ay: b.Y_min-10;
+					}else if(b.X_max <= ax){
+						ay= b.X_max <= ax? ay: b.Y_max+10;
+					}
 				}
 				B= true;
 				break;
@@ -92,7 +90,7 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 	tx= ax;
 	ty= ay;
 	Move_cnt++;
-	DrawPath= true;
+	mousedown= true;
 }
 function getPoint(v, min, max){
 	if(v <= min)
@@ -119,7 +117,7 @@ ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 		blocks[i].draw();
 	}
 }
-let DrawPath= false;
+let mousedown= false;
 ball.prototype.Shoot= function (){
 	clear();
 	this.x+= this.direction[0]*2;
@@ -139,25 +137,18 @@ ball.prototype.Shoot= function (){
 		let pointX= getPoint(this.x, b.X_min, b.X_max);
 		let pointY= getPoint(this.y, b.Y_min, b.Y_max);
 		if(Checkdistance(this.x, this.y, pointX, pointY)){
-			console.log("닿음");
-			console.log(pointX, pointY);
-			if( b.X_min < pointX && pointX < b.X_max){
-					this.direction[1]*=-1;
+			if(pointY == b.Y_max || pointY == b.Y_min){
+				this.direction[1]*=-1;
 			}
-			if( b.Y_min < pointY && pointY < b.Y_max){
-					this.direction[0]*=-1;
+			if(pointX == b.X_max || pointX == b.X_min){
+				this.direction[0]*=-1;
 			}
 
 			b.cnt--;
 			if(b.cnt<=0)
 				blocks.splice(i, 1)
-		}else{
-			// 그냥감
 		}
 	}
-	for(var i=0, len= blocks.length; i<len; i++)
-		blocks[i].draw();
-	this.draw("#7cd3ff", this.x, this.y);
 	if(this.y+this.radius>=canvas.height){
 		this.draw();
 		shot = false;
@@ -175,7 +166,7 @@ function display(){
 	for(var i=0, len= blocks.length; i<len; i++)
 		if(blocks[i] != undefined)
 			blocks[i].draw();
-	if(DrawPath){
+	if(mousedown){
 		Ball.DrawPath(Move_cnt);
 	}
 	requestAnimationFrame(function (){
@@ -185,6 +176,8 @@ function display(){
 function updateBlock(){
 	for(var i=0, len= blocks.length; i<len; i++){
 		blocks[i].t++;
+		blocks[i].Y_min= blocks[i].t*blocks[i].h+1;
+		blocks[i].Y_max= blocks[i].Y_min+blocks[i].h-2;
 		if(blocks[i].t==8)
 			end();
 	}
@@ -221,7 +214,7 @@ let blocks= [];
 
 window.onload= function (){
 	blocks.push(new Block({l: 0, t: 0, cnt: turn}));
-	blocks.push(new Block({l: 1, t: 0, cnt: turn}));
+	blocks.push(new Block({l: 5, t: 0, cnt: turn}));
 
 	canvas.addEventListener("mousedown", function (e){
 		if(shot)
