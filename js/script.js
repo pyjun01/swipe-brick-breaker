@@ -21,6 +21,7 @@ let Ballcnt= 1;
 let Shootcnt= 0;
 let mousestate= 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
 let should_Add= 0;
+let max= 0;
 
 function ball(x, y){
 	this.path= new Path2D();
@@ -322,13 +323,13 @@ function eve (){
 			}
 		}
 	});
-	function balls_shoot(i, len){
+	function balls_shoot(i, len, t){
 		Balls[i].Shoot();
 		if(i < len-1){
 			setTimeout(function (){
 				i++;
 				balls_shoot(i, len);
-			}, 30);
+			}, t);
 		}
 	}
 	window.addEventListener("mouseup", function (e){
@@ -336,7 +337,33 @@ function eve (){
 			mousestate= 2;
 			ctx.lineDashOffset= 0;
 			Shootcnt= Balls.length;
-			balls_shoot(0, Balls.length);
+
+			max= Math.max.apply(null, Balls[0].direction);
+			let x= Balls[0].x;
+			let y= Balls[0].y;
+			let ax= Balls[0].direction[0];
+			let ay= Balls[0].direction[1];
+			let AddCount= 0;
+			while(1){
+				x+= ax*2;
+				y-= ay*2;
+				AddCount++;
+				if(Checkdistance(x, y, Balls[0].x, Balls.y, 24)){
+					break;
+				}
+			}
+			// console.log('max: '+Math.max.apply(null, Balls[0].direction));
+			/*
+				0~3
+				1~1.5
+				간격= 24;
+				젤큰값= max;
+				max값을 1초에 FPS번 +해줌 
+				max
+				(max/24) 번 플러스하면 24됨
+				1000/FPS*(24/max)
+			*/ 
+			balls_shoot(0, Balls.length, AddCount);
 			turn++;
 		}
 	});
