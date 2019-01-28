@@ -325,11 +325,12 @@ function eve (){
 	});
 	function balls_shoot(i, len, t){
 		Balls[i].Shoot();
+		console.log(i);
 		if(i < len-1){
 			setTimeout(function (){
 				i++;
-				balls_shoot(i, len);
-			}, t);
+				balls_shoot(i, len, t);
+			}, 1000/FPS*t);
 		}
 	}
 	window.addEventListener("mouseup", function (e){
@@ -341,25 +342,24 @@ function eve (){
 			max= Math.max.apply(null, Balls[0].direction);
 			let x= Balls[0].x;
 			let y= Balls[0].y;
-			let ax= Balls[0].direction[0];
-			let ay= Balls[0].direction[1];
 			let AddCount= 0;
 			while(1){
-				x+= ax*2;
-				y-= ay*2;
+				x+= Balls[0].direction[0]*2;
+				y-= Balls[0].direction[1]*2;
 				AddCount++;
-				if(Checkdistance(x, y, Balls[0].x, Balls.y, 24)){
+				if(!Checkdistance(x, y, Balls[0].x, Balls[0].y, 24))
 					break;
-				}
 			}
 			// console.log('max: '+Math.max.apply(null, Balls[0].direction));
 			/*
+				7=24
 				0~3
 				1~1.5
 				간격= 24;
 				젤큰값= max;
 				max값을 1초에 FPS번 +해줌 
 				max
+				7번 더하면 24
 				(max/24) 번 플러스하면 24됨
 				1000/FPS*(24/max)
 			*/ 
