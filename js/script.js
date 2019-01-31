@@ -30,13 +30,14 @@ function ball(x, y){
 	this.y= y? y: H-10;
 	this.direction= [0, 0];
 	this.cnt=1;
-	this.draw= (c= "#4BBCF4", x= this.x, y= this.y) =>{
-		this.path= new Path2D();
-		ctx.fillStyle= c;
-		this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
-		ctx.fill(this.path);
-	}
+	this.isShoot= false;
 }
+ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
+	this.path= new Path2D();
+	ctx.fillStyle= c;
+	this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
+	ctx.fill(this.path);
+};
 ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 	var min_range= 1;
 	var max_range= 1.5;
@@ -127,9 +128,9 @@ ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 	this.draw("#7cd3ff", tx, ty);
 	this.draw();
 }
-ball.prototype.Shoot= function (){
-	this.x+= this.direction[0]*2;
-	this.y-= this.direction[1]*2;
+ball.prototype.update= function (){
+	this.x+= this.direction[0];
+	this.y-= this.direction[1];
 	if(this.x+this.radius>=canvas.width || this.x<=this.radius){
 		this.x= this.x+this.radius>=canvas.width? canvas.width-this.radius: this.radius;
 		this.direction[0]= this.direction[0]*-1;
@@ -169,20 +170,9 @@ ball.prototype.Shoot= function (){
 		}
 	}
 	if(this.y+this.radius>=canvas.height){
-		if(Shootcnt === Ballcnt){	
-			this.draw();
-		}
-		Shootcnt--;
-		if(Shootcnt === 0){
-			mousestate= 0;
-			update();
-		}
-		return;
+		return true;
 	}
-	var self= this;
-	setTimeout(_ =>{
-		self.Shoot();
-	}, 1000 / FPS);
+	return false;
 }
 
 function Block (option){
@@ -270,7 +260,7 @@ function display(){ // 캔버스에 그리기
 			AddBalls[i].draw();
 	requestAnimationFrame(display);
 }
-function update(){ // 공 날라갔다가 돌아왔을때
+function callback(){ // 공 날라갔다가 돌아왔을때
 	for(var i=0, len= Blocks.length; i<len; i++){
 		Blocks[i].t++;
 		Blocks[i].Y_min= Blocks[i].t*Blocks[i].h+0.5;
@@ -297,10 +287,28 @@ function update(){ // 공 날라갔다가 돌아왔을때
 let Balls= [];
 let Blocks= [];
 let AddBalls= [];
+
+function Ball_update (){
+	console.log(mousestate);
+	for(var i=0; i<Balls.length; i++){
+		if(!Balls[i].isShoot)
+			continue;
+		if(Balls[i].update()){
+			Balls[i].isShoot= false;
+			Shootcnt--;
+			if(Shootcnt === 0){
+				mousestate= 0;
+				callback();
+				return;
+			}
+		}
+	}
+	setTimeout(function (){
+		Ball_update();
+	}, 1000/FPS);
+}
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
-		// if(shot)
-		// 	return;
 		if(mousestate === 2)
 			return;
 		var cx= e.pageX-canvas.offsetLeft;
@@ -323,47 +331,35 @@ function eve (){
 			}
 		}
 	});
-	function balls_shoot(i, len, t){
-		Balls[i].Shoot();
-		console.log(i);
-		if(i < len-1){
-			setTimeout(function (){
-				i++;
-				balls_shoot(i, len, t);
-			}, 1000/FPS*t);
-		}
+	function balls_shoot(i, t){
+		Balls[i].isShoot= true;
+		return new Promise( (res, rej)=> {
+			setTimeout(_ =>{
+				return res(i);
+			}, 1000 / FPS * t);
+		});
 	}
-	window.addEventListener("mouseup", function (e){
+	window.addEventListener("mouseup", async function (e){
 		if(mousestate === 1){
 			mousestate= 2;
 			ctx.lineDashOffset= 0;
 			Shootcnt= Balls.length;
-
+			console.log(Shootcnt);
+			Ball_update();
 			max= Math.max.apply(null, Balls[0].direction);
 			let x= Balls[0].x;
 			let y= Balls[0].y;
 			let AddCount= 0;
 			while(1){
-				x+= Balls[0].direction[0]*2;
-				y-= Balls[0].direction[1]*2;
+				x+= Balls[0].direction[0];
+				y-= Balls[0].direction[1];
 				AddCount++;
 				if(!Checkdistance(x, y, Balls[0].x, Balls[0].y, 24))
 					break;
 			}
-			// console.log('max: '+Math.max.apply(null, Balls[0].direction));
-			/*
-				7=24
-				0~3
-				1~1.5
-				간격= 24;
-				젤큰값= max;
-				max값을 1초에 FPS번 +해줌 
-				max
-				7번 더하면 24
-				(max/24) 번 플러스하면 24됨
-				1000/FPS*(24/max)
-			*/ 
-			balls_shoot(0, Balls.length, AddCount);
+			for(var i=0; i<Balls.length; i++){
+				let s= await balls_shoot(i, AddCount);
+			}
 			turn++;
 		}
 	});
