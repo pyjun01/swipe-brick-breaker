@@ -274,8 +274,65 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 			should_Add++;
 		}
 	}
-	Blocks.push(new Block({l: 1, t: 0, cnt: turn}));
-	AddBalls.push(new AddBall({l: 0, t: 0}));
+	// Math.floor(turn/10); // 0 1 2 3 4 5
+	let cnt= 0;
+	let getrandomcnt;
+	switch(Math.floor(turn/10)){
+		case 0:
+			cnt= Math.floor(Math.random()*2)+1 == 1? 1: 2;
+			break;
+		case 1:
+			getrandomcnt= Math.floor(Math.random()*(10))+1;
+			if(getrandomcnt<=3){
+				cnt= 1;
+			}else if(getrandomcnt<=9){
+				cnt= 2;
+			}else{
+				cnt= 3;
+			}
+			break;
+		case 2:
+			getrandomcnt= Math.floor(Math.random()*(10))+1;
+			if(getrandomcnt<=4){
+				cnt= 2;
+			}else if(getrandomcnt<=9){
+				cnt= 3;
+			}else{
+				cnt= 4;
+			}
+			break;
+	}
+	if(Math.floor(turn/10)>=3){
+		getrandomcnt= Math.floor(Math.random()*(10))+1;
+		if(getrandomcnt<=4){
+			cnt= 3;
+		}else if(getrandomcnt<=9){
+			cnt= 4;
+		}else{
+			cnt= 5;
+		}
+	}
+	var bl= [];
+	for(var i=0; i<cnt; i++){
+		let l= Math.floor(Math.random()*6);
+		if(bl.includes(l)){
+			i--;
+		}else{
+			bl.push(l);
+		}
+	}
+	for(var i=0; i<bl.length; i++){
+		Blocks.push(new Block({l: bl[i], t: 1, cnt: turn}));
+	}
+	function ab(){
+		let l= Math.floor(Math.random()*5);
+		if(bl.includes(l)){
+			ab();
+		}else{
+			AddBalls.push(new AddBall({l: l, t: 1}));
+		}
+	}
+	ab();
 	for(var i=0; i<should_Add; i++)
 		Balls.push(new ball(Balls[0].x, Balls[0].y));
 	should_Add= 0;
@@ -289,7 +346,6 @@ let Blocks= [];
 let AddBalls= [];
 
 function Ball_update (){
-	console.log(mousestate);
 	for(var i=0; i<Balls.length; i++){
 		if(!Balls[i].isShoot)
 			continue;
@@ -307,12 +363,14 @@ function Ball_update (){
 		Ball_update();
 	}, 1000/FPS);
 }
+
+let wrap= document.querySelector("#app");
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
 		if(mousestate === 2)
 			return;
-		var cx= e.pageX-canvas.offsetLeft;
-		var cy= e.pageY-canvas.offsetTop;
+		var cx= e.pageX-wrap.getBoundingClientRect().left;
+		var cy= e.pageY-wrap.getBoundingClientRect().top;
 		if(!ctx.isPointInPath(Balls[0].path, cx, cy)){
 			mousestate= 1;
 			Balls[0].GetPath( (cx-Balls[0].x), -(cy-Balls[0].y), 0);
@@ -320,8 +378,8 @@ function eve (){
 	});
 	window.addEventListener("mousemove", function (e){
 		if(mousestate === 1){
-			var mx= e.pageX-canvas.offsetLeft;
-			var my= e.pageY-canvas.offsetTop;
+			var mx= e.pageX-wrap.getBoundingClientRect().left;
+			var my= e.pageY-wrap.getBoundingClientRect().top;
 			if(ctx.isPointInPath(Balls[0].path, mx, my)){
 				Move_cnt++;
 				clear();
@@ -371,9 +429,9 @@ function eve (){
 }
 window.onload= function (){
 	Balls.push(new ball());
-	Blocks.push(new Block({l: 0, t: 0, cnt: turn}));
-	Blocks.push(new Block({l: 5, t: 0, cnt: turn}));
-	AddBalls.push(new AddBall({l: 1, t: 0}));
+	Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
+	Blocks.push(new Block({l: 5, t: 1, cnt: turn}));
+	AddBalls.push(new AddBall({l: 1, t: 1}));
 	
 	eve();
 	display();
