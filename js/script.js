@@ -34,10 +34,13 @@ function ball(x, y){
 }
 ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
 	this.path= new Path2D();
+	ctx.save();
 	ctx.fillStyle= c;
 	this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
 	ctx.fill(this.path);
+	ctx.restore();
 };
+let px= 0, py= 0;
 ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 	var min_range= 1;
 	var max_range= 1.5;
@@ -61,67 +64,78 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 	while( (ax + this.radius <= W || ax >= 0) || (ay + this.radius <= canvas.height || ay >= 0) ){
 		ax+= lx;
 		ay-= ly;
-		if(ax + this.radius >= W || ax <= this.radius){
-			ax= ax + this.radius >= W?  W - this.radius: this.radius;
-			lx*= -1;
-			over= true;
-		}
- 		if(ay + this.radius >= H || ay <= this.radius){
-			ay= ay + this.radius >= H? H - this.radius: this.radius;
-			ly*= -1;
-			over= true;
-		}
-		for(var i=0, len= Blocks.length; i<len; i++){ // 벽에 닿았는지 체크
-			let b= Blocks[i];
-			let pointX= getPoint(ax, b.X_min, b.X_max);
-			let pointY= getPoint(ay, b.Y_min, b.Y_max);
-			if(Checkdistance(ax, ay, pointX, pointY)){
-				if(pointY == b.Y_max){
-					if(ax <= b.X_min){
-						ay= ax <= b.X_min? ay: b.Y_max+10;
-					}else if(b.X_max <= ax){
-						ay= b.X_max <= ax? ay: b.Y_max+10;
-					} 
-					else {
-						ay= b.Y_max + 10;
-					}
-				} else if(pointX == b.X_max){
-					if(ay <= b.Y_min){
-						ax= ay <= b.Y_min? ax: b.X_max + 10;
-					}else if(b.Y_max <= ay){
-						ax= b.Y_max <= ay? ax: b.X_max + 10;
-					}else{
-						ax= b.X_max + 10;
-					}
-				} else if(pointX == b.X_min){
-					if(ay <= b.Y_min){
-						ax= ay <= b.Y_min? ax: b.X_min - 10;
-					}else if(b.Y_max <= ay){
-						ax= b.Y_max <= ay? ax: b.X_min - 10;
-					}else{
-						ax= b.X_min - 10;
-					}
-				}
-
-				B= true;
-				break;
+		if(!over){
+			if(ax + this.radius >= W || ax <= this.radius){
+				ax= ax + this.radius >= W?  W - this.radius: this.radius;
+				lx*= -1;
+				over= true;
+			}
+	 		if(ay + this.radius >= H || ay <= this.radius){
+				ay= ay + this.radius >= H? H - this.radius: this.radius;
+				ly*= -1;
+				over= true;
+			}
+			if(over){
+				px= ax;
+				py= ay;
 			}
 		}
-		if(over || B){
+		if(!B){
+			if(over){
+				tx= ax;
+				ty= ay;
+				break;
+			}
+			for(var i=0, len= Blocks.length; i<len; i++){ // 벽에 닿았는지 체크
+				let b= Blocks[i];
+				let pointX= getPoint(ax, b.X_min, b.X_max);
+				let pointY= getPoint(ay, b.Y_min, b.Y_max);
+				if(Checkdistance(ax, ay, pointX, pointY)){
+					if(pointY == b.Y_max){
+						if(ax <= b.X_min){
+							ay= ax <= b.X_min? ay: b.Y_max+10;
+						}else if(b.X_max <= ax){
+							ay= b.X_max <= ax? ay: b.Y_max+10;
+						} 
+						else {
+							ay= b.Y_max + 10;
+						}
+					} else if(pointX == b.X_max){
+						if(ay <= b.Y_min){
+							ax= ay <= b.Y_min? ax: b.X_max + 10;
+						}else if(b.Y_max <= ay){
+							ax= b.Y_max <= ay? ax: b.X_max + 10;
+						}else{
+							ax= b.X_max + 10;
+						}
+					} else if(pointX == b.X_min){
+						if(ay <= b.Y_min){
+							ax= ay <= b.Y_min? ax: b.X_min - 10;
+						}else if(b.Y_max <= ay){
+							ax= b.Y_max <= ay? ax: b.X_min - 10;
+						}else{
+							ax= b.X_min - 10;
+						}
+					}
+					tx= ax;
+					ty= ay;
+					B= true;
+					break;
+				}
+			}
+		}
+		if(over && B){
 			break;	
-		} 
+		}
 	}
-	tx= ax;
-	ty= ay;
 	Move_cnt++;
 }
 ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 	if( mousestate % 2 === 0 || Move_cnt != c) // 방향이 다르거나 마우스클릭이 안돼있으면 return
 		return;
-	clear();
 	ctx.beginPath();
 	ctx.moveTo(this.x, this.y);
-	ctx.lineTo(tx, ty);
+	ctx.lineTo(px, py);
 	ctx.stroke();
 	ctx.closePath();
 	ctx.lineDashOffset-= 0.7;
@@ -242,6 +256,13 @@ function getPoint(v, min, max){ // return pointX or pointY
 }
 function display(){ // 캔버스에 그리기
 	clear();
+	for(var i=0, len= Blocks.length; i<len; i++)
+		if(Blocks[i] != undefined)
+			Blocks[i].draw();
+	for(var i=0, len= AddBalls.length; i<len; i++)
+		if(AddBalls[i] != undefined)
+			AddBalls[i].draw();
+
 	if(mousestate === 2){ // 공을 날렸으면
 		for(var i=0, len= Balls.length; i<len; i++)
 			if(Balls[i] != undefined)
@@ -252,12 +273,6 @@ function display(){ // 캔버스에 그리기
 	if(mousestate === 1){ // 공 날릴려고 마우스 누르면 경로 그리기
 		Balls[0].DrawPath(Move_cnt);
 	}
-	for(var i=0, len= Blocks.length; i<len; i++)
-		if(Blocks[i] != undefined)
-			Blocks[i].draw();
-	for(var i=0, len= AddBalls.length; i<len; i++)
-		if(AddBalls[i] != undefined)
-			AddBalls[i].draw();
 	requestAnimationFrame(display);
 }
 function callback(){ // 공 날라갔다가 돌아왔을때
@@ -269,9 +284,12 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 			end();
 	}
 	for(var i=0, len= AddBalls.length; i<len; i++){
-		AddBalls[i].t++;
-		if(AddBalls[i].t==8){
-			should_Add++;
+		if(AddBalls[i] != undefined){
+			AddBalls[i].t++;
+			if(AddBalls[i].t==7){
+				AddBalls.splice(i, 1);
+				should_Add++;
+			}
 		}
 	}
 	// Math.floor(turn/10); // 0 1 2 3 4 5
