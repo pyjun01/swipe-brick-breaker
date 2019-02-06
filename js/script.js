@@ -223,6 +223,8 @@ function Block (option){
 }
 Block.prototype.draw = function (){
 	ctx.save();
+	ctx.fillStyle= "rgba(0, 0, 0, 0.2)";
+	ctx.fillRect(this.l*this.w+3.5, this.t*this.h+5.5, this.w-2, this.h-2);
 	ctx.fillStyle= this.c;
 	ctx.fillRect(this.l*this.w+1, this.t*this.h+1, this.w-2, this.h-2);
 	ctx.fillStyle= "#000";
