@@ -154,17 +154,35 @@ ball.prototype.update= function (){
 		this.direction[1]= this.direction[1]*-1;
 	}
 	for(var i=0, len= Blocks.length; i<len; i++){
-		if(Blocks[i] == undefined)
+		if(Blocks[i] == undefined || Math.abs(Blocks[i].X_min-this.x) > 150)
 			continue;
 		let b= Blocks[i];
 		let pointX= getPoint(this.x, b.X_min, b.X_max);
 		let pointY= getPoint(this.y, b.Y_min, b.Y_max);
 		if(Checkdistance(this.x, this.y, pointX, pointY)){
-			if(pointY == b.Y_max || pointY == b.Y_min){
-				this.direction[1]*=-1;
-			}
-			if(pointX == b.X_max || pointX == b.X_min){
-				this.direction[0]*=-1;
+			const v1x = this.x - pointX;  // green line to corner
+			const v1y = this.y - pointY;
+			// normalize the line and rotate 90deg to get the tangent
+			const len = (v1x ** 2 + v1y ** 2) ** 0.5;
+			if(len <= this.radius && ( pointX == b.X_min || pointX == b.X_max) && ( pointY == b.Y_min || pointY == b.Y_max)){
+				// const tx = -v1y / len;  // green line as tangent
+				// const ty =  v1x / len;
+				// const dot = (this.direction[0] * tx + this.direction[1] * ty) * 2; // length of orange line
+				// this.direction[0] = -this.direction[0] + tx * dot; // outgoing delta (red)
+				// this.direction[1] = -this.direction[1] + ty * dot;
+
+				let x = this.x - pointX;
+			    let y = this.y - pointY;
+			    let c = -2 * (this.direction[0] * x + this.direction[1] * y) / (x * x + y * y);
+			    this.direction[0] = this.direction[0] + c * x;
+			    this.direction[1] = this.direction[1] + c * y;
+			}else{
+				if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
+					this.direction[0]*=-1;
+				}
+				if(pointY == b.Y_max || pointY == b.Y_min){
+					this.direction[1]*=-1;
+				}
 			}
 
 			b.cnt--;
