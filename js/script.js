@@ -35,6 +35,10 @@ function ball(x, y){
 ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
 	this.path= new Path2D();
 	ctx.save();
+	// ctx.fillStyle= "rgba(0, 0, 0, 0.2)";
+	// this.path.arc(x+2, y+2, this.radius, 0, 2*Math.PI, false);
+	// ctx.fill(this.path);
+	// this.path= new Path2D();
 	ctx.fillStyle= c;
 	this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
 	ctx.fill(this.path);
@@ -242,14 +246,12 @@ function AddBall (option){
 AddBall.prototype.draw = function() {
 	ctx.save();
 	ctx.beginPath();
-	ctx.fillStyle= "#69db7c";
+	ctx.strokeStyle= "#69db7c";
+	ctx.setLineDash([0,0]);
+	ctx.lineWidth= 3;
+	ctx.lineDashOffset= 0;
 	ctx.arc(this.l*Block_width+(Block_width/2), this.t*Block_height+(Block_height/2), this.radius, 0, 2 * Math.PI);
-	ctx.fill();
-	ctx.closePath();
-	ctx.beginPath();
-	ctx.fillStyle= "#fff";
-	ctx.arc(this.l*Block_width+(Block_width/2), this.t*Block_height+(Block_height/2), 12, 0, Math.PI*2);
-	ctx.fill();
+	ctx.stroke();
 	ctx.closePath();
 	ctx.beginPath();
 	ctx.fillStyle= "#69db7c";
@@ -276,7 +278,7 @@ function getPoint(v, min, max){ // return pointX or pointY
 }
 function display(){ // 캔버스에 그리기
 	clear();
-	for(var i=0, len= Blocks.length; i<len; i++)
+	for(var i=Blocks.length-1; i>=0; i--)
 		if(Blocks[i] != undefined)
 			Blocks[i].draw();
 	for(var i=0, len= AddBalls.length; i<len; i++)
@@ -474,17 +476,3 @@ window.onload= function (){
 	eve();
 	display();
 }
-	
-// function DrawLinePoint(x, y, angle, length){
-// const radians = (Math.PI / 180.0) * angle;
-// ctx.beginPath();
-// ctx.moveTo(100, 100);
-// ctx.lineTo(x + Math.cos(radians)*length, y + Math.sin(radians)*length);
-// ctx.stroke();
-// ctx.closePath();
-// /*
-// (r*r)= (x*x) + (y*y)
-// tan(θ)= y / x
-// θ = atan(y / x)
-// */
-// }
