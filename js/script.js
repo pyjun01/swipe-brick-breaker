@@ -8,7 +8,9 @@ ctx.setLineDash([5, 5]);
 ctx.strokeStyle= "#A5DDF9";
 ctx.lineCap= 'round';
 ctx.lineWidth= 2;
-const C= ["#91a7ff", "#748ffc", "#5c7cfa", "#4c6ef5", "#4263eb", "#3b5bdb", "#364fc7"];
+// const C= ["#91a7ff", "#748ffc", "#5c7cfa", "#4c6ef5", "#4263eb", "#3b5bdb", "#364fc7"];
+const C= ["#FE4251", "#F5936C"];
+
 const Block_width= W/6;
 const Block_height= H/9;
 let Move_cnt= 0;
@@ -53,11 +55,11 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		n+= "0";
 	lx= lx/Number(n);
 	ly= ly/Number(n);
-	while(  (ly < min_range || ly > max_range) ){
-		if(Math.abs(lx)>4)
-			break;
-		lx= lx+ (ly<min_range? lx*0.05: -lx*0.05)
-		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05)
+	while(  (ly < min_range || ly > max_range) && (lx < min_range || lx > max_range) ){
+		// if(Math.abs(lx)>4)
+		// 	break;
+		lx= lx+ (ly<min_range? lx*0.05: -lx*0.05);
+		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05);
 	}
 	for(var i=0, len= Balls.length; i<len; i++)
 		Balls[i].direction= [lx, ly];
@@ -182,9 +184,11 @@ ball.prototype.update= function (){
 			    this.direction[1] = this.direction[1] + c * y;
 			}else{
 				if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
+					this.x= pointX==b.X_max? pointX+10: pointX-10;
 					this.direction[0]*=-1;
 				}
 				if(pointY == b.Y_max || pointY == b.Y_min){
+					this.y= pointY==b.Y_max? pointY+10: pointY-10;
 					this.direction[1]*=-1;
 				}
 			}
@@ -223,7 +227,13 @@ function Block (option){
 	this.Y_max= this.Y_min+this.h-2;
 
 	this.cnt= option.cnt;
-	this.c= C[Math.floor(option.cnt/10)>=6? 6: Math.floor(option.cnt/10)];
+	// Blocks.reduce( (max, v) => {
+
+	// });
+	for(var i=0, len=Blocks.length; i<len; i++){
+
+	}
+	this.c= C[0];
 }
 Block.prototype.draw = function (){
 	ctx.save();
@@ -231,8 +241,8 @@ Block.prototype.draw = function (){
 	ctx.fillRect(this.l*this.w+3.5, this.t*this.h+5.5, this.w-2, this.h-2);
 	ctx.fillStyle= this.c;
 	ctx.fillRect(this.l*this.w+1, this.t*this.h+1, this.w-2, this.h-2);
-	ctx.fillStyle= "#000";
-	ctx.font = "20px sans-serif";
+	ctx.fillStyle= "#fff";
+	ctx.font = "bold 20px sans-serif";
 	ctx.textAlign = "center";
 	ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
 	ctx.restore();
@@ -361,6 +371,23 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 			bl.push(l);
 		}
 	}
+	// 여기서 블럭 색깔 지정해줌
+	/*
+		블럭들 cnt를 배열에 넣고 내림차순 정렬해주고 배열에 idx값에 맞게 색깔넣기?
+		let cs= [];
+		for(var i=0, len= Blocks.length; i<len; i++){
+			cs.push(Blocks[i].cnt);
+		}
+		cs= cs.sort((a,b)=>b-a).filter( (v,idx) => cs.indexOf(v)===idx);
+		for(var i=0, len= cs.length; i<len; i++){
+			for(var j=0;j<Blocks.length; j++){
+				if(Blocks[j].cnt===cs[i])
+					Blocks[j].c= C[i+1>3? 3: i+1];
+			}
+		}
+	*/
+	for(var i=0, len= Blocks.length; i<len; i++)
+		Blocks[i].c= C[1];
 	for(var i=0; i<bl.length; i++){
 		Blocks.push(new Block({l: bl[i], t: 1, cnt: turn}));
 	}
@@ -401,7 +428,7 @@ function Ball_update (){
 	}
 	setTimeout(function (){
 		Ball_update();
-	}, 1000/FPS);
+	}, 500/FPS);
 }
 
 let wrap= document.querySelector("#app");
@@ -463,7 +490,7 @@ function eve (){
 	});
 	for(var i=0, len= document.querySelectorAll("input[type='radio']").length; i<len; i++){
 		document.querySelectorAll("input[type='radio']")[i].onclick= function (){
-			FPS= this.value*60
+			FPS= this.value*60;
 		}
 	}
 }
