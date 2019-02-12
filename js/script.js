@@ -9,7 +9,7 @@ ctx.strokeStyle= "#A5DDF9";
 ctx.lineCap= 'round';
 ctx.lineWidth= 2;
 // const C= ["#91a7ff", "#748ffc", "#5c7cfa", "#4c6ef5", "#4263eb", "#3b5bdb", "#364fc7"];
-const C= ["#FE4251", "#F5936C"];
+const C= "#F5936C";
 
 const Block_width= W/6;
 const Block_height= H/9;
@@ -166,22 +166,18 @@ ball.prototype.update= function (){
 		let pointX= getPoint(this.x, b.X_min, b.X_max);
 		let pointY= getPoint(this.y, b.Y_min, b.Y_max);
 		if(Checkdistance(this.x, this.y, pointX, pointY)){
-			const v1x = this.x - pointX;  // green line to corner
-			const v1y = this.y - pointY;
-			// normalize the line and rotate 90deg to get the tangent
-			const len = (v1x ** 2 + v1y ** 2) ** 0.5;
+			let nx = this.x - pointX;
+			let ny = this.y - pointY;
+			let len = Math.sqrt(nx * nx + ny * ny); // 공과 모서리 사이 거리
 			if(len <= this.radius && ( pointX == b.X_min || pointX == b.X_max) && ( pointY == b.Y_min || pointY == b.Y_max)){
-				// const tx = -v1y / len;  // green line as tangent
-				// const ty =  v1x / len;
-				// const dot = (this.direction[0] * tx + this.direction[1] * ty) * 2; // length of orange line
-				// this.direction[0] = -this.direction[0] + tx * dot; // outgoing delta (red)
-				// this.direction[1] = -this.direction[1] + ty * dot;
-
-				let x = this.x - pointX;
-			    let y = this.y - pointY;
-			    let c = -2 * (this.direction[0] * x + this.direction[1] * y) / (x * x + y * y);
-			    this.direction[0] = this.direction[0] + c * x;
-			    this.direction[1] = this.direction[1] + c * y;
+				console.log(len);
+				console.log(this.direction[0].toFixed(2), this.direction[1].toFixed(2));
+				nx /= len; 
+				ny /= len;
+				let projection = this.direction[0] * nx + this.direction[1] * ny;
+				this.direction[0] = this.direction[0] - 2 * projection * nx;
+				this.direction[1] = this.direction[1] - 2 * projection * ny;
+				console.log(this.direction[0].toFixed(2), this.direction[1].toFixed(2));
 			}else{
 				if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
 					this.x= pointX==b.X_max? pointX+10: pointX-10;
@@ -233,7 +229,7 @@ function Block (option){
 	for(var i=0, len=Blocks.length; i<len; i++){
 
 	}
-	this.c= C[0];
+	this.c= C;
 }
 Block.prototype.draw = function (){
 	ctx.save();
@@ -382,12 +378,12 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 		for(var i=0, len= cs.length; i<len; i++){
 			for(var j=0;j<Blocks.length; j++){
 				if(Blocks[j].cnt===cs[i])
-					Blocks[j].c= C[i+1>3? 3: i+1];
+					Blocks[j].c= C;
 			}
 		}
 	*/
 	for(var i=0, len= Blocks.length; i<len; i++)
-		Blocks[i].c= C[1];
+		Blocks[i].c= C;
 	for(var i=0; i<bl.length; i++){
 		Blocks.push(new Block({l: bl[i], t: 1, cnt: turn}));
 	}
@@ -479,7 +475,7 @@ function eve (){
 				x+= Balls[0].direction[0];
 				y-= Balls[0].direction[1];
 				AddCount++;
-				if(!Checkdistance(x, y, Balls[0].x, Balls[0].y, 24))
+				if(!Checkdistance(x, y, Balls[0].x, Balls[0].y, 15))
 					break;
 			}
 			for(var i=0; i<Balls.length; i++){
