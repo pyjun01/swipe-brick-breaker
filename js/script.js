@@ -30,7 +30,9 @@ function ball(x, y){
 	this.radius= 10;
 	this.x= x? x: W / 2;
 	this.y= y? y: H-10;
-	this.direction= [0, 0];
+	// this.direction= [0, 0];
+	this.dx= 0;
+	this.dy= 0;
 	this.cnt=1;
 	this.isShoot= false;
 }
@@ -61,8 +63,13 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		lx= lx+ (ly<min_range? lx*0.05: -lx*0.05);
 		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05);
 	}
-	for(var i=0, len= Balls.length; i<len; i++)
-		Balls[i].direction= [lx, ly];
+	for(var i=0, len= Balls.length; i<len; i++){
+		// Balls[i].direction= [lx, ly];
+		Balls[i].dx= Number(lx.toFixed(4));
+		Balls[i].dy= -Number(ly.toFixed(4));
+	}
+	console.log(Balls[0].dx)
+	console.log(Balls[0].dy)
 	var ax= this.x;
 	var ay= this.y;
 	var over= false;
@@ -149,15 +156,15 @@ ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 	this.draw();
 }
 ball.prototype.update= function (){
-	this.x+= this.direction[0];
-	this.y-= this.direction[1];
+	this.x+= this.dx;
+	this.y+= this.dy;
 	if(this.x+this.radius>=canvas.width || this.x<=this.radius){
 		this.x= this.x+this.radius>=canvas.width? canvas.width-this.radius: this.radius;
-		this.direction[0]= this.direction[0]*-1;
+		this.dx= this.dx*-1;
 	}
 	if(this.y+this.radius>=canvas.height || this.y<=this.radius){
 		this.y= this.y+this.radius>=canvas.height? canvas.height-this.radius: this.radius;
-		this.direction[1]= this.direction[1]*-1;
+		this.dy= this.dy*-1;
 	}
 	for(var i=0, len= Blocks.length; i<len; i++){
 		if(Blocks[i] == undefined || Math.abs(Blocks[i].X_min-this.x) > 150)
@@ -166,26 +173,26 @@ ball.prototype.update= function (){
 		let pointX= getPoint(this.x, b.X_min, b.X_max);
 		let pointY= getPoint(this.y, b.Y_min, b.Y_max);
 		if(Checkdistance(this.x, this.y, pointX, pointY)){
+			if( (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max) ){
+				console.log("corner");
+			}
 			let nx = this.x - pointX;
 			let ny = this.y - pointY;
 			let len = Math.sqrt(nx * nx + ny * ny); // 공과 모서리 사이 거리
 			if(len <= this.radius && ( pointX == b.X_min || pointX == b.X_max) && ( pointY == b.Y_min || pointY == b.Y_max)){
-				console.log(len);
-				console.log(this.direction[0].toFixed(2), this.direction[1].toFixed(2));
-				nx /= len; 
+				nx /= len;
 				ny /= len;
-				let projection = this.direction[0] * nx + this.direction[1] * ny;
-				this.direction[0] = this.direction[0] - 2 * projection * nx;
-				this.direction[1] = this.direction[1] - 2 * projection * ny;
-				console.log(this.direction[0].toFixed(2), this.direction[1].toFixed(2));
+				let projection = this.dx * nx + this.dy * ny;
+				this.dx = this.dx - 2 * projection * nx;
+				this.dy = this.dy - 2 * projection * ny;
 			}else{
 				if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
 					this.x= pointX==b.X_max? pointX+10: pointX-10;
-					this.direction[0]*=-1;
+					this.dx*=-1;
 				}
 				if(pointY == b.Y_max || pointY == b.Y_min){
 					this.y= pointY==b.Y_max? pointY+10: pointY-10;
-					this.direction[1]*=-1;
+					this.dy*=-1;
 				}
 			}
 
@@ -268,8 +275,8 @@ AddBall.prototype.draw = function() {
 };
 
 function Checkdistance(x1, y1, x2, y2, distance= 10){
-	let x= Math.abs(x1-x2);
-	let y= Math.abs(y1-y2);
+	let x= x1-x2;
+	let y= y1-y2;
 	let result= Math.sqrt(x*x+y*y);
 	return distance >= result;
 }
@@ -467,13 +474,13 @@ function eve (){
 			Shootcnt= Balls.length;
 			console.log(Shootcnt);
 			Ball_update();
-			max= Math.max.apply(null, Balls[0].direction);
+			max= Math.max(Balls[0].dx, Balls[0].dy);
 			let x= Balls[0].x;
 			let y= Balls[0].y;
 			let AddCount= 0;
 			while(1){
-				x+= Balls[0].direction[0];
-				y-= Balls[0].direction[1];
+				x+= Balls[0].dx;
+				y-= Balls[0].dy;
 				AddCount++;
 				if(!Checkdistance(x, y, Balls[0].x, Balls[0].y, 15))
 					break;
