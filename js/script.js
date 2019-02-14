@@ -68,8 +68,6 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		Balls[i].dx= Number(lx.toFixed(4));
 		Balls[i].dy= -Number(ly.toFixed(4));
 	}
-	console.log(Balls[0].dx)
-	console.log(Balls[0].dy)
 	var ax= this.x;
 	var ay= this.y;
 	var over= false;
@@ -407,20 +405,26 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 		Balls.push(new ball(Balls[0].x, Balls[0].y));
 	should_Add= 0;
 	for(var i=0, len= Balls.length; i<len; i++){
-		Balls[i].x= Balls[0].x;
-		Balls[i].y= Balls[0].y;
+		Balls[i].x= Balls[fbid].x;
+		Balls[i].y= Balls[fbid].y;
 	}
+	document.querySelector(".score").innerText= turn;
+}
+function end() {
+	localStorage.setItem('score', turn);
 }
 let Balls= [];
 let Blocks= [];
 let AddBalls= [];
-
+let fbid= 0;
 function Ball_update (){
 	for(var i=0; i<Balls.length; i++){
 		if(!Balls[i].isShoot)
 			continue;
 		if(Balls[i].update()){
 			Balls[i].isShoot= false;
+			if(Balls.length == Shootcnt)
+				fbid= i;
 			Shootcnt--;
 			if(Shootcnt === 0){
 				mousestate= 0;
@@ -472,7 +476,6 @@ function eve (){
 			mousestate= 2;
 			ctx.lineDashOffset= 0;
 			Shootcnt= Balls.length;
-			console.log(Shootcnt);
 			Ball_update();
 			max= Math.max(Balls[0].dx, Balls[0].dy);
 			let x= Balls[0].x;
@@ -494,6 +497,7 @@ function eve (){
 	for(var i=0, len= document.querySelectorAll("input[type='radio']").length; i<len; i++){
 		document.querySelectorAll("input[type='radio']")[i].onclick= function (){
 			FPS= this.value*60;
+			console.log(FPS)
 		}
 	}
 }
@@ -502,7 +506,7 @@ window.onload= function (){
 	Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
 	Blocks.push(new Block({l: 5, t: 1, cnt: turn}));
 	AddBalls.push(new AddBall({l: 1, t: 1}));
-	
+	document.querySelector(".h").innerText= localStorage.getItem('score')? localStorage.getItem('score'): 0;
 	eve();
 	display();
 }
