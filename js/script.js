@@ -63,27 +63,27 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		lx= lx+ (ly<min_range? lx*0.05: -lx*0.05);
 		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05);
 	}
+	ly*= -1;
 	for(var i=0, len= Balls.length; i<len; i++){
 		// Balls[i].direction= [lx, ly];
-		Balls[i].dx= Number(lx.toFixed(4));
-		Balls[i].dy= -Number(ly.toFixed(4));
+		Balls[i].dx= lx;
+		Balls[i].dy= ly;
 	}
 	var ax= this.x;
 	var ay= this.y;
 	var over= false;
 	var B= false;
-	while( (ax + this.radius <= W || ax >= 0) || (ay + this.radius <= canvas.height || ay >= 0) ){
+	while( (ax + this.radius <= W || ax >= 0) || (ay + this.radius <= canvas.height || ay >= 0) ){ // 벽에 닿을때까지
+		/* 현재 공의 위치가 담긴 변수인 ax, ay에 값을 더해줌*/
 		ax+= lx;
-		ay-= ly;
+		ay+= ly;
 		if(!over){
-			if(ax + this.radius >= W || ax <= this.radius){
+			if(ax + this.radius >= W || ax <= this.radius){ // 좌우벽중에 닿았으면
 				ax= ax + this.radius >= W?  W - this.radius: this.radius;
-				lx*= -1;
 				over= true;
 			}
-	 		if(ay + this.radius >= H || ay <= this.radius){
+	 		if(ay + this.radius >= H || ay <= this.radius){ // 위에있는 벽에 닿았으면
 				ay= ay + this.radius >= H? H - this.radius: this.radius;
-				ly*= -1;
 				over= true;
 			}
 			if(over){
@@ -444,7 +444,7 @@ function eve (){
 		if(mousestate === 2)
 			return;
 		var cx= e.pageX-wrap.getBoundingClientRect().left;
-		var cy= e.pageY-wrap.getBoundingClientRect().top;
+		var cy= e.pageY-wrap.getBoundingClientRect().top-document.querySelector("span").offsetHeight;
 		if(!ctx.isPointInPath(Balls[0].path, cx, cy)){
 			mousestate= 1;
 			Balls[0].GetPath( (cx-Balls[0].x), -(cy-Balls[0].y), 0);
@@ -453,7 +453,7 @@ function eve (){
 	window.addEventListener("mousemove", function (e){
 		if(mousestate === 1){
 			var mx= e.pageX-wrap.getBoundingClientRect().left;
-			var my= e.pageY-wrap.getBoundingClientRect().top;
+			var my= e.pageY-wrap.getBoundingClientRect().top-document.querySelector("span").offsetHeight;
 			if(ctx.isPointInPath(Balls[0].path, mx, my)){
 				Move_cnt++;
 				clear();
@@ -506,7 +506,7 @@ window.onload= function (){
 	Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
 	Blocks.push(new Block({l: 5, t: 1, cnt: turn}));
 	AddBalls.push(new AddBall({l: 1, t: 1}));
-	document.querySelector(".h").innerText= localStorage.getItem('score')? localStorage.getItem('score'): 0;
+	// document.querySelector(".h").innerText= localStorage.getItem('score')? localStorage.getItem('score'): 0;
 	eve();
 	display();
 }
