@@ -409,6 +409,7 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 		Balls[i].y= Balls[fbid].y;
 	}
 	document.querySelector(".score").innerText= turn;
+	document.querySelector(".b").innerText= Balls.length;
 }
 function end() {
 	localStorage.setItem('score', turn);
@@ -445,6 +446,8 @@ function eve (){
 			return;
 		var cx= e.pageX-wrap.getBoundingClientRect().left;
 		var cy= e.pageY-wrap.getBoundingClientRect().top-document.querySelector("span").offsetHeight;
+		if(cy >= 380)
+			return;
 		if(!ctx.isPointInPath(Balls[0].path, cx, cy)){
 			mousestate= 1;
 			Balls[0].GetPath( (cx-Balls[0].x), -(cy-Balls[0].y), 0);
@@ -454,6 +457,8 @@ function eve (){
 		if(mousestate === 1){
 			var mx= e.pageX-wrap.getBoundingClientRect().left;
 			var my= e.pageY-wrap.getBoundingClientRect().top-document.querySelector("span").offsetHeight;
+			if(my >= 380)
+				return;
 			if(ctx.isPointInPath(Balls[0].path, mx, my)){
 				Move_cnt++;
 				clear();
@@ -463,14 +468,6 @@ function eve (){
 			}
 		}
 	});
-	function balls_shoot(i, t){
-		Balls[i].isShoot= true;
-		return new Promise( (res, rej)=> {
-			setTimeout(_ =>{
-				return res(i);
-			}, 1000 / FPS * t);
-		});
-	}
 	window.addEventListener("mouseup", async function (e){
 		if(mousestate === 1){
 			mousestate= 2;
@@ -494,6 +491,14 @@ function eve (){
 			turn++;
 		}
 	});
+	function balls_shoot(i, t){
+		Balls[i].isShoot= true;
+		return new Promise( (res, rej)=> {
+			setTimeout(_ =>{
+				return res(i);
+			}, 1000 / FPS * t);
+		});
+	}
 	for(var i=0, len= document.querySelectorAll("input[type='radio']").length; i<len; i++){
 		document.querySelectorAll("input[type='radio']")[i].onclick= function (){
 			FPS= this.value*60;
