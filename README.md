@@ -2,7 +2,7 @@
 
 DEMO: https://pyjun01.github.io/swipe_brick_breaker/
 
-## 
+## 할거
 
 - [ ] 공 속도
 - [ ] 공 모서리
