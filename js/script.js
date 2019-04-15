@@ -273,12 +273,9 @@ AddBall.prototype.draw = function() {
 };
 
 function Checkdistance(x1, y1, x2, y2, distance= 10){
-	let x= x1-x2;
-	let y= y1-y2;
-	let result= Math.sqrt(x*x+y*y);
-	return distance >= result;
+	return distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }
-function clear (){ctx.clearRect(0,0,canvas.width,canvas.height);}
+const clear= _ => ctx.clearRect(0,0,canvas.width,canvas.height);
 function getPoint(v, min, max){ // return pointX or pointY
 	if(v <= min)
 		return min
@@ -511,7 +508,6 @@ window.onload= function (){
 	Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
 	Blocks.push(new Block({l: 5, t: 1, cnt: turn}));
 	AddBalls.push(new AddBall({l: 1, t: 1}));
-	// document.querySelector(".h").innerText= localStorage.getItem('score')? localStorage.getItem('score'): 0;
 	eve();
 	display();
 }
