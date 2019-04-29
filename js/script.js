@@ -1,5 +1,6 @@
 const canvas= document.getElementById("canvas");
 const ctx= canvas.getContext('2d');
+
 let FPS= 60;
 let turn= 1;
 let W= canvas.width;
@@ -8,7 +9,6 @@ ctx.setLineDash([5, 5]);
 ctx.strokeStyle= "#A5DDF9";
 ctx.lineCap= 'round';
 ctx.lineWidth= 2;
-// const C= ["#91a7ff", "#748ffc", "#5c7cfa", "#4c6ef5", "#4263eb", "#3b5bdb", "#364fc7"];
 const C= "#F5936C";
 
 const Block_width= W/6;
@@ -25,33 +25,27 @@ let mousestate= 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
 let should_Add= 0;
 let max= 0;
 
+let px= 0, py= 0;
 function ball(x, y){
-	this.path= new Path2D();
-	this.radius= 10;
-	this.x= x? x: W / 2;
-	this.y= y? y: H-10;
-	// this.direction= [0, 0];
-	this.dx= 0;
-	this.dy= 0;
-	this.cnt=1;
-	this.isShoot= false;
+	this.path= new Path2D(); // Path2D
+	this.radius= 10; // 반지름
+	this.x= x? x: W / 2; // x 좌표 값
+	this.y= y? y: H-10; // y 좌표 값
+	this.dx= 0; // 1 FPS당 움직이는 X 값
+	this.dy= 0; // 1 FPS당 움직이는 Y 값
+	this.isShoot= false; // 날아가고 있는지
 }
 ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
 	this.path= new Path2D();
 	ctx.save();
-	// ctx.fillStyle= "rgba(0, 0, 0, 0.2)";
-	// this.path.arc(x+2, y+2, this.radius, 0, 2*Math.PI, false);
-	// ctx.fill(this.path);
-	// this.path= new Path2D();
 	ctx.fillStyle= c;
 	this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
 	ctx.fill(this.path);
 	ctx.restore();
 };
-let px= 0, py= 0;
 ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
-	var min_range= 1;
-	var max_range= 1.5;
+	var min_range= 3;
+	var max_range= 3.5;
 	var n= "1";
 	for(var i=0; i<String(Math.max(Math.abs(lx), Math.abs(ly))).split(".")[0].length-1; i++)
 		n+= "0";
@@ -64,6 +58,8 @@ ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05);
 	}
 	ly*= -1;
+	console.log(lx.toFixed(0), ly.toFixed(0));
+	console.log(lx.toFixed(0), ly.toFixed(0));
 	for(var i=0, len= Balls.length; i<len; i++){
 		// Balls[i].direction= [lx, ly];
 		Balls[i].dx= lx;
@@ -149,7 +145,7 @@ ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
 	ctx.lineTo(px, py);
 	ctx.stroke();
 	ctx.closePath();
-	ctx.lineDashOffset-= 0.7;
+	ctx.lineDashOffset-= 1;
 	this.draw("#7cd3ff", tx, ty);
 	this.draw();
 }
@@ -272,10 +268,11 @@ AddBall.prototype.draw = function() {
 	ctx.restore();
 };
 
-function Checkdistance(x1, y1, x2, y2, distance= 10){
-	return distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-}
-const clear= _ => ctx.clearRect(0,0,canvas.width,canvas.height);
+const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+const GetPointFromDigree= (x, y, digree) => new Object({x: x + Math.cos(digree*(Math.PI/180))*15, y: y + Math.sin(digree*(Math.PI/180))*15});
+const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height);
+const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
+const end= _ => {};
 function getPoint(v, min, max){ // return pointX or pointY
 	if(v <= min)
 		return min
@@ -303,7 +300,9 @@ function display(){ // 캔버스에 그리기
 	if(mousestate === 1){ // 공 날릴려고 마우스 누르면 경로 그리기
 		Balls[0].DrawPath(Move_cnt);
 	}
-	requestAnimationFrame(display);
+	requestAnimationFrame(_ =>{
+		setTimeout(display, 1000/60);
+	});
 }
 function callback(){ // 공 날라갔다가 돌아왔을때
 	for(var i=0, len= Blocks.length; i<len; i++){
@@ -408,9 +407,6 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 	document.querySelector(".score").innerText= turn;
 	document.querySelector(".b").innerText= Balls.length;
 }
-function end() {
-	localStorage.setItem('score', turn);
-}
 let Balls= [];
 let Blocks= [];
 let AddBalls= [];
@@ -437,32 +433,37 @@ function Ball_update (){
 }
 
 let wrap= document.querySelector("#app");
+let mousedown_pos= { x: 0, y: 0 };
+let mousemove_pos= { x: 0, y: 0 };
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
-		if(mousestate === 2)
-			return;
-		var cx= e.pageX-wrap.getBoundingClientRect().left;
-		var cy= e.pageY-wrap.getBoundingClientRect().top-document.querySelector("span").offsetHeight;
-		if(cy >= 380)
-			return;
-		if(!ctx.isPointInPath(Balls[0].path, cx, cy)){
-			mousestate= 1;
-			Balls[0].GetPath( (cx-Balls[0].x), -(cy-Balls[0].y), 0);
-		}
+		if(mousestate === 2) return; // mouseup 한 상태이면
+		mousedown_pos= {
+			x: e.pageX-wrap.getBoundingClientRect().left,
+			y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
+		};
+		let digree= GetDigree(mousedown_pos.x, Balls[0].x, mousedown_pos.y, Balls[0].y);
+		if(Math.abs(digree)<100) return; // 공과 마우스 커서 사이 각도가 100도 이하이면
+		mousestate= 1; // mousedown 한 상태
+		Balls[0].GetPath( (mousedown_pos.x - Balls[0].x), -(mousedown_pos.y-Balls[0].y), 0);
 	});
 	window.addEventListener("mousemove", function (e){
-		if(mousestate === 1){
-			var mx= e.pageX-wrap.getBoundingClientRect().left;
-			var my= e.pageY-wrap.getBoundingClientRect().top-document.querySelector("span").offsetHeight;
-			if(my >= 380)
+		if(mousestate === 1){ // mousedown 한 상태이면
+			mousemove_pos= {
+				x: e.pageX-wrap.getBoundingClientRect().left,
+				y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
+			};
+			if(Math.abs(GetDigree(mousemove_pos.x, Balls[0].x, mousemove_pos.y, Balls[0].y))<100){
+				let point= 
+					GetDigree(mousemove_pos.x, Balls[0].x, mousemove_pos.y, Balls[0].y)>0
+					? GetPointFromDigree(Balls[0].x, Balls[0].y, -10)
+					: GetPointFromDigree(Balls[0].x, Balls[0].y, -170);
+				Balls[0].GetPath( (point.x-Balls[0].x), -(point.y-Balls[0].y), 0);
 				return;
-			if(ctx.isPointInPath(Balls[0].path, mx, my)){
-				Move_cnt++;
-				clear();
-				Balls[0].draw();
-			}else{
-				Balls[0].GetPath( (mx-Balls[0].x), -(my-Balls[0].y), 0);
 			}
+			if(ctx.isPointInPath(Balls[0].path, mousemove_pos.x, mousemove_pos.y))
+				return;
+			Balls[0].GetPath( (mousemove_pos.x-Balls[0].x), -(mousemove_pos.y-Balls[0].y), 0);
 		}
 	});
 	window.addEventListener("mouseup", async function (e){
