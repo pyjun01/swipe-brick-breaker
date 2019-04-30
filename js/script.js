@@ -46,20 +46,7 @@ ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
 ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
 	var min_range= 3;
 	var max_range= 3.5;
-	var n= "1";
-	for(var i=0; i<String(Math.max(Math.abs(lx), Math.abs(ly))).split(".")[0].length-1; i++)
-		n+= "0";
-	lx= lx/Number(n);
-	ly= ly/Number(n);
-	while(  (ly < min_range || ly > max_range) && (lx < min_range || lx > max_range) ){
-		// if(Math.abs(lx)>4)
-		// 	break;
-		lx= lx+ (ly<min_range? lx*0.05: -lx*0.05);
-		ly= ly+ (ly<min_range? ly*0.05: -ly*0.05);
-	}
 	ly*= -1;
-	console.log(lx.toFixed(0), ly.toFixed(0));
-	console.log(lx.toFixed(0), ly.toFixed(0));
 	for(var i=0, len= Balls.length; i<len; i++){
 		// Balls[i].direction= [lx, ly];
 		Balls[i].dx= lx;
@@ -269,7 +256,7 @@ AddBall.prototype.draw = function() {
 };
 
 const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-const GetPointFromDigree= (x, y, digree) => new Object({x: x + Math.cos(digree*(Math.PI/180))*15, y: y + Math.sin(digree*(Math.PI/180))*15});
+const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len});
 const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height);
 const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
 const end= _ => {};
@@ -435,36 +422,34 @@ function Ball_update (){
 let wrap= document.querySelector("#app");
 let mousedown_pos= { x: 0, y: 0 };
 let mousemove_pos= { x: 0, y: 0 };
+const onMouse= (e, ms= 1) =>{
+	pos= {
+		x: e.pageX-wrap.getBoundingClientRect().left,
+		y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
+	};
+	let digree= GetDigree(pos.x, Balls[0].x, pos.y, Balls[0].y);
+	console.log(digree);
+	if(Math.abs(digree)<100){
+		let point= 
+			digree>0
+			? GetPointFromDigree(Balls[0].x, Balls[0].y, -10, 3)
+			: GetPointFromDigree(Balls[0].x, Balls[0].y, -170, 3);
+		Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
+		return;
+	} // 공과 마우스 커서 사이 각도가 100도 이하이면
+	if(ms && ctx.isPointInPath(Balls[0].path, mousemove_pos.x, mousemove_pos.y)) return;
+	digree= digree<0? -270-(digree): 90-(digree);
+	let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
+	Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
+}
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
 		if(mousestate === 2) return; // mouseup 한 상태이면
-		mousedown_pos= {
-			x: e.pageX-wrap.getBoundingClientRect().left,
-			y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
-		};
-		let digree= GetDigree(mousedown_pos.x, Balls[0].x, mousedown_pos.y, Balls[0].y);
-		if(Math.abs(digree)<100) return; // 공과 마우스 커서 사이 각도가 100도 이하이면
 		mousestate= 1; // mousedown 한 상태
-		Balls[0].GetPath( (mousedown_pos.x - Balls[0].x), -(mousedown_pos.y-Balls[0].y), 0);
+		onMouse(e);
 	});
 	window.addEventListener("mousemove", function (e){
-		if(mousestate === 1){ // mousedown 한 상태이면
-			mousemove_pos= {
-				x: e.pageX-wrap.getBoundingClientRect().left,
-				y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
-			};
-			if(Math.abs(GetDigree(mousemove_pos.x, Balls[0].x, mousemove_pos.y, Balls[0].y))<100){
-				let point= 
-					GetDigree(mousemove_pos.x, Balls[0].x, mousemove_pos.y, Balls[0].y)>0
-					? GetPointFromDigree(Balls[0].x, Balls[0].y, -10)
-					: GetPointFromDigree(Balls[0].x, Balls[0].y, -170);
-				Balls[0].GetPath( (point.x-Balls[0].x), -(point.y-Balls[0].y), 0);
-				return;
-			}
-			if(ctx.isPointInPath(Balls[0].path, mousemove_pos.x, mousemove_pos.y))
-				return;
-			Balls[0].GetPath( (mousemove_pos.x-Balls[0].x), -(mousemove_pos.y-Balls[0].y), 0);
-		}
+		if(mousestate === 1) onMouse(e, 1); // mousedown 한 상태이면
 	});
 	window.addEventListener("mouseup", async function (e){
 		if(mousestate === 1){
