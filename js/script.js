@@ -1,31 +1,27 @@
 const canvas= document.getElementById("canvas");
 const ctx= canvas.getContext('2d');
-
 let FPS= 60;
 let turn= 1;
 let W= canvas.width;
 let H= canvas.height;
+/* canvas default setting */
 ctx.setLineDash([5, 5]);
 ctx.strokeStyle= "#A5DDF9";
 ctx.lineCap= 'round';
 ctx.lineWidth= 2;
-const C= "#F5936C";
-
-const Block_width= W/6;
-const Block_height= H/9;
-let Move_cnt= 0;
+/* //canvas default setting */
+const C= "#F5936C"; // default block color
+const Block_width= W/6; // block width
+const Block_height= H/9; // block height
+let Move_cnt= 0; // mousemove cnt (예상경로 움직이는데 사용됨)
 let tx=0; // 공이 닿을 x 좌표값
 let ty= 0; // 공이 닿을 y 좌표값
-let down= false;
-let shot= false;
-let mousedown= false;
-let Ballcnt= 1;
-let Shootcnt= 0;
+let Shootcnt= 0; // 날아가고있는 공의 개수
 let mousestate= 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
-let should_Add= 0;
+let should_Add= 0; // 추가해야되는 공 cnt
 let max= 0;
-
 let px= 0, py= 0;
+/* ball object */
 function ball(x, y){
 	this.path= new Path2D(); // Path2D
 	this.radius= 10; // 반지름
@@ -198,7 +194,8 @@ ball.prototype.update= function (){
 	}
 	return false;
 }
-
+/* //ball object */
+/* Block object */
 function Block (option){
 	this.w= W/6;
 	this.h= H/9;
@@ -231,7 +228,8 @@ Block.prototype.draw = function (){
 	ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
 	ctx.restore();
 };
-
+/* //Block object */
+/* AddBall object */
 function AddBall (option){
 	this.radius= 15;
 	this.l= option.l;
@@ -254,39 +252,65 @@ AddBall.prototype.draw = function() {
 	ctx.closePath();
 	ctx.restore();
 };
+/* //AddBall object */
 
-const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len});
-const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height);
-const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI;
-const end= _ => {};
-function getPoint(v, min, max){ // return pointX or pointY
-	if(v <= min)
-		return min
-	else if(v >= max)
-		return max
-	else
-		return v;
+let Balls= []; // Ball array
+let Blocks= []; // 블록 array
+let AddBalls= []; // 공 추가하는거 array
+let fbid= 0; // 바닥에 닿은 첫번째 공의 idx
+
+const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)); // 두 점 사이의 거리를 구함
+const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len}); // 각도를 통해 새로운 위치 가져옴
+const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas clear
+const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI; // 점 두개로 각도 구함
+const end= _ => {}; // 게임 끝났을때
+
+let wrap= document.querySelector("#app"); // wrapper tag
+let mousedown_pos= { x: 0, y: 0 }; // mousedown postiion object
+let mousemove_pos= { x: 0, y: 0 }; // mousemove postiion object
+const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
+	pos= {
+		x: e.pageX-wrap.getBoundingClientRect().left,
+		y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
+	};
+	let digree= GetDigree(pos.x, Balls[0].x, pos.y, Balls[0].y); // get digree between mousedown_position and ball_position
+	console.log(digree);
+	if(Math.abs(digree)<100){ // 공과 마우스 커서 사이 각도가 100도 이하이면 최솟값으로 변경
+		let point= 
+			digree>0
+			? GetPointFromDigree(Balls[0].x, Balls[0].y, -10, 3)
+			: GetPointFromDigree(Balls[0].x, Balls[0].y, -170, 3);
+		Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
+		return;
+	} 
+	if(ms && ctx.isPointInPath(Balls[0].path, mousemove_pos.x, mousemove_pos.y)) return;
+	digree= digree<0? -270-(digree): 90-(digree);
+	let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
+	Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
 }
-function display(){ // 캔버스에 그리기
-	clear();
-	for(var i=Blocks.length-1; i>=0; i--)
+
+function getPoint(v, min, max){ // return pointX or pointY
+	if(v <= min || v >= max)
+		return Math.abs(max-v) < Math.abs(min-v)? max: min;
+	return v;
+}
+function display(){ // display function
+	clear(); // clear canvas
+	for(var i=Blocks.length-1; i>=0; i--) // block draw
 		if(Blocks[i] != undefined)
 			Blocks[i].draw();
-	for(var i=0, len= AddBalls.length; i<len; i++)
+	for(var i=0, len= AddBalls.length; i<len; i++) // addball draw
 		if(AddBalls[i] != undefined)
 			AddBalls[i].draw();
-
 	if(mousestate === 2){ // 공을 날렸으면
 		for(var i=0, len= Balls.length; i<len; i++)
 			if(Balls[i] != undefined)
 				Balls[i].draw();
-	}else{ // 공 날리기전 바닥에 있을때
+	}else{ // 공이 바닥에 있을때
 		Balls[0].draw();
 	}
-	if(mousestate === 1){ // 공 날릴려고 마우스 누르면 경로 그리기
-		Balls[0].DrawPath(Move_cnt);
-	}
+	if(mousestate === 1)
+		Balls[0].DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
 	requestAnimationFrame(_ =>{
 		setTimeout(display, 1000/60);
 	});
@@ -394,10 +418,6 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 	document.querySelector(".score").innerText= turn;
 	document.querySelector(".b").innerText= Balls.length;
 }
-let Balls= [];
-let Blocks= [];
-let AddBalls= [];
-let fbid= 0;
 function Ball_update (){
 	for(var i=0; i<Balls.length; i++){
 		if(!Balls[i].isShoot)
@@ -418,30 +438,6 @@ function Ball_update (){
 		Ball_update();
 	}, 500/FPS);
 }
-
-let wrap= document.querySelector("#app");
-let mousedown_pos= { x: 0, y: 0 };
-let mousemove_pos= { x: 0, y: 0 };
-const onMouse= (e, ms= 1) =>{
-	pos= {
-		x: e.pageX-wrap.getBoundingClientRect().left,
-		y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
-	};
-	let digree= GetDigree(pos.x, Balls[0].x, pos.y, Balls[0].y);
-	console.log(digree);
-	if(Math.abs(digree)<100){
-		let point= 
-			digree>0
-			? GetPointFromDigree(Balls[0].x, Balls[0].y, -10, 3)
-			: GetPointFromDigree(Balls[0].x, Balls[0].y, -170, 3);
-		Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
-		return;
-	} // 공과 마우스 커서 사이 각도가 100도 이하이면
-	if(ms && ctx.isPointInPath(Balls[0].path, mousemove_pos.x, mousemove_pos.y)) return;
-	digree= digree<0? -270-(digree): 90-(digree);
-	let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
-	Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
-}
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
 		if(mousestate === 2) return; // mouseup 한 상태이면
@@ -452,11 +448,11 @@ function eve (){
 		if(mousestate === 1) onMouse(e, 1); // mousedown 한 상태이면
 	});
 	window.addEventListener("mouseup", async function (e){
-		if(mousestate === 1){
-			mousestate= 2;
-			ctx.lineDashOffset= 0;
-			Shootcnt= Balls.length;
-			Ball_update();
+		if(mousestate === 1){ // if mousedown
+			mousestate= 2; // mousestate= mouseup
+			ctx.lineDashOffset= 0; // 예상 경로 초기화
+			Shootcnt= Balls.length; // ball 개수만큼 Shootcnt 설정
+			Ball_update(); // 공 업데이트
 			max= Math.max(Balls[0].dx, Balls[0].dy);
 			let x= Balls[0].x;
 			let y= Balls[0].y;
@@ -489,6 +485,7 @@ function eve (){
 		}
 	}
 }
+
 window.onload= function (){
 	Balls.push(new ball());
 	Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
