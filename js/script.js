@@ -263,6 +263,11 @@ const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1
 const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len}); // 각도를 통해 새로운 위치 가져옴
 const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas clear
 const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI; // 점 두개로 각도 구함
+const getPoint= (v, min, max) =>{ // return pointX or pointY
+	if(v <= min || v >= max)
+		return Math.abs(max-v) < Math.abs(min-v)? max: min;
+	return v;
+}
 const end= _ => {}; // 게임 끝났을때
 
 let wrap= document.querySelector("#app"); // wrapper tag
@@ -287,12 +292,6 @@ const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
 	digree= digree<0? -270-(digree): 90-(digree);
 	let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
 	Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
-}
-
-function getPoint(v, min, max){ // return pointX or pointY
-	if(v <= min || v >= max)
-		return Math.abs(max-v) < Math.abs(min-v)? max: min;
-	return v;
 }
 function display(){ // display function
 	clear(); // clear canvas
@@ -445,7 +444,7 @@ function balls_shoot(i, t){
 				return res(i);
 			}, 1000 / FPS * t);
 		});
-	}
+}
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
 		if(mousestate === 2) return; // mouseup 한 상태이면
