@@ -438,6 +438,14 @@ function Ball_update (){
 		Ball_update();
 	}, 500/FPS);
 }
+function balls_shoot(i, t){
+		Balls[i].isShoot= true;
+		return new Promise( (res, rej)=> {
+			setTimeout(_ =>{
+				return res(i);
+			}, 1000 / FPS * t);
+		});
+	}
 function eve (){
 	canvas.addEventListener("mousedown", function (e){
 		if(mousestate === 2) return; // mouseup 한 상태이면
@@ -470,18 +478,10 @@ function eve (){
 			turn++;
 		}
 	});
-	function balls_shoot(i, t){
-		Balls[i].isShoot= true;
-		return new Promise( (res, rej)=> {
-			setTimeout(_ =>{
-				return res(i);
-			}, 1000 / FPS * t);
-		});
-	}
-	for(var i=0, len= document.querySelectorAll("input[type='radio']").length; i<len; i++){
-		document.querySelectorAll("input[type='radio']")[i].onclick= function (){
+	let radio= document.querySelectorAll("input[type='radio']");
+	for(let i=0, len= radio.length; i<len; i++){
+		radio[i].onclick= function (){
 			FPS= this.value*60;
-			console.log(FPS)
 		}
 	}
 }
