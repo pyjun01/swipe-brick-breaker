@@ -21,7 +21,15 @@ let mousestate= 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
 let should_Add= 0; // 추가해야되는 공 cnt
 let max= 0;
 let px= 0, py= 0;
-/* ball object */
+
+let Balls= []; // Ball array
+let Blocks= []; // 블록 array
+let AddBalls= []; // 공 추가하는거 array
+let fbid= 0; // 바닥에 닿은 첫번째 공의 idx
+let wrap= document.querySelector("#app"); // wrapper tag
+let mousedown_pos= { x: 0, y: 0 }; // mousedown postiion object
+let mousemove_pos= { x: 0, y: 0 }; // mousemove postiion object
+/* object */
 function ball(x, y){
 	this.path= new Path2D(); // Path2D
 	this.radius= 10; // 반지름
@@ -39,99 +47,6 @@ ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
 	ctx.fill(this.path);
 	ctx.restore();
 };
-ball.prototype.GetPath= function GetPath (lx, ly, re){ // get path
-	var min_range= 3;
-	var max_range= 3.5;
-	ly*= -1;
-	for(var i=0, len= Balls.length; i<len; i++){
-		// Balls[i].direction= [lx, ly];
-		Balls[i].dx= lx;
-		Balls[i].dy= ly;
-	}
-	var ax= this.x;
-	var ay= this.y;
-	var over= false;
-	var B= false;
-	while( (ax + this.radius <= W || ax >= 0) || (ay + this.radius <= canvas.height || ay >= 0) ){ // 벽에 닿을때까지
-		/* 현재 공의 위치가 담긴 변수인 ax, ay에 값을 더해줌*/
-		ax+= lx;
-		ay+= ly;
-		if(!over){
-			if(ax + this.radius >= W || ax <= this.radius){ // 좌우벽중에 닿았으면
-				ax= ax + this.radius >= W?  W - this.radius: this.radius;
-				over= true;
-			}
-	 		if(ay + this.radius >= H || ay <= this.radius){ // 위에있는 벽에 닿았으면
-				ay= ay + this.radius >= H? H - this.radius: this.radius;
-				over= true;
-			}
-			if(over){
-				px= ax;
-				py= ay;
-			}
-		}
-		if(!B){
-			if(over){
-				tx= ax;
-				ty= ay;
-				break;
-			}
-			for(var i=0, len= Blocks.length; i<len; i++){ // 벽에 닿았는지 체크
-				let b= Blocks[i];
-				let pointX= getPoint(ax, b.X_min, b.X_max);
-				let pointY= getPoint(ay, b.Y_min, b.Y_max);
-				if(Checkdistance(ax, ay, pointX, pointY)){
-					if(pointY == b.Y_max){
-						if(ax <= b.X_min){
-							ay= ax <= b.X_min? ay: b.Y_max+10;
-						}else if(b.X_max <= ax){
-							ay= b.X_max <= ax? ay: b.Y_max+10;
-						} 
-						else {
-							ay= b.Y_max + 10;
-						}
-					} else if(pointX == b.X_max){
-						if(ay <= b.Y_min){
-							ax= ay <= b.Y_min? ax: b.X_max + 10;
-						}else if(b.Y_max <= ay){
-							ax= b.Y_max <= ay? ax: b.X_max + 10;
-						}else{
-							ax= b.X_max + 10;
-						}
-					} else if(pointX == b.X_min){
-						if(ay <= b.Y_min){
-							ax= ay <= b.Y_min? ax: b.X_min - 10;
-						}else if(b.Y_max <= ay){
-							ax= b.Y_max <= ay? ax: b.X_min - 10;
-						}else{
-							ax= b.X_min - 10;
-						}
-					}
-					tx= ax;
-					ty= ay;
-					B= true;
-					break;
-				}
-			}
-		}
-		if(over && B){
-			break;	
-		}
-	}
-	Move_cnt++;
-}
-ball.prototype.DrawPath= function DrawPath(c){ // line animation & ball draw
-	if( mousestate % 2 === 0 || Move_cnt != c) // 방향이 다르거나 마우스클릭이 안돼있으면 return
-		return;
-	ctx.beginPath();
-	ctx.moveTo(this.x, this.y);
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	ctx.closePath();
-	ctx.lineDashOffset-= 1;
-	this.draw("#7cd3ff", tx, ty);
-	this.draw();
-}
 ball.prototype.update= function (){
 	this.x+= this.dx;
 	this.y+= this.dy;
@@ -194,8 +109,6 @@ ball.prototype.update= function (){
 	}
 	return false;
 }
-/* //ball object */
-/* Block object */
 function Block (option){
 	this.w= W/6;
 	this.h= H/9;
@@ -228,8 +141,6 @@ Block.prototype.draw = function (){
 	ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
 	ctx.restore();
 };
-/* //Block object */
-/* AddBall object */
 function AddBall (option){
 	this.radius= 15;
 	this.l= option.l;
@@ -252,13 +163,105 @@ AddBall.prototype.draw = function() {
 	ctx.closePath();
 	ctx.restore();
 };
-/* //AddBall object */
+/* //object */
+/* function */
+const GetPath= (lx, ly) =>{ // get path
+	let range= {
+		min: 3, 
+		max: 3.5
+	};
+	ly*= -1;
+	for(var i=0, len= Balls.length; i<len; i++){
+		Balls[i].dx= lx;
+		Balls[i].dy= ly;
+	}
+	let tg= Balls[0];
+	var ax= tg.x;
+	var ay= tg.y;
 
-let Balls= []; // Ball array
-let Blocks= []; // 블록 array
-let AddBalls= []; // 공 추가하는거 array
-let fbid= 0; // 바닥에 닿은 첫번째 공의 idx
-
+	var over= false;
+	var B= false;
+	while( (ax + tg.radius <= W || ax >= 0) || (ay + tg.radius <= canvas.height || ay >= 0) ){ // 벽에 닿을때까지
+		/* 현재 공의 위치가 담긴 변수인 ax, ay에 값을 더해줌*/
+		ax+= lx;
+		ay+= ly;
+		if(!over){
+			if(ax + tg.radius >= W || ax <= tg.radius){ // 좌우벽중에 닿았으면
+				ax= ax + tg.radius >= W?  W - tg.radius: tg.radius;
+				over= true;
+			}
+	 		if(ay + tg.radius >= H || ay <= tg.radius){ // 위에있는 벽에 닿았으면
+				ay= ay + tg.radius >= H? H - tg.radius: tg.radius;
+				over= true;
+			}
+			if(over){
+				px= ax;
+				py= ay;
+			}
+		}
+		if(!B){
+			if(over){
+				tx= ax;
+				ty= ay;
+				break;
+			}
+			for(var i=0, len= Blocks.length; i<len; i++){ // 벽에 닿았는지 체크
+				let b= Blocks[i];
+				let pointX= getPoint(ax, b.X_min, b.X_max);
+				let pointY= getPoint(ay, b.Y_min, b.Y_max);
+				if(Checkdistance(ax, ay, pointX, pointY)){
+					if(pointY == b.Y_max){
+						if(ax <= b.X_min){
+							ay= ax <= b.X_min? ay: b.Y_max+10;
+						}else if(b.X_max <= ax){
+							ay= b.X_max <= ax? ay: b.Y_max+10;
+						} 
+						else {
+							ay= b.Y_max + 10;
+						}
+					} else if(pointX == b.X_max){
+						if(ay <= b.Y_min){
+							ax= ay <= b.Y_min? ax: b.X_max + 10;
+						}else if(b.Y_max <= ay){
+							ax= b.Y_max <= ay? ax: b.X_max + 10;
+						}else{
+							ax= b.X_max + 10;
+						}
+					} else if(pointX == b.X_min){
+						if(ay <= b.Y_min){
+							ax= ay <= b.Y_min? ax: b.X_min - 10;
+						}else if(b.Y_max <= ay){
+							ax= b.Y_max <= ay? ax: b.X_min - 10;
+						}else{
+							ax= b.X_min - 10;
+						}
+					}
+					tx= ax;
+					ty= ay;
+					B= true;
+					break;
+				}
+			}
+		}
+		if(over && B){
+			break;	
+		}
+	}
+	Move_cnt++;
+}
+const DrawPath= c =>{ // line animation & ball draw
+	if( mousestate % 2 === 0 || Move_cnt != c) // 방향이 다르거나 마우스클릭이 안돼있으면 return
+		return;
+	let tg= Balls[0];
+	ctx.beginPath();
+	ctx.moveTo(tg.x, tg.y);
+	ctx.lineTo(px, py);
+	ctx.stroke();
+	ctx.closePath();
+	ctx.lineDashOffset-= 1;
+	tg.draw("#7cd3ff", tx, ty);
+	tg.draw();
+}
 const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)); // 두 점 사이의 거리를 구함
 const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len}); // 각도를 통해 새로운 위치 가져옴
 const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas clear
@@ -269,31 +272,26 @@ const getPoint= (v, min, max) =>{ // return pointX or pointY
 	return v;
 }
 const end= _ => {}; // 게임 끝났을때
-
-let wrap= document.querySelector("#app"); // wrapper tag
-let mousedown_pos= { x: 0, y: 0 }; // mousedown postiion object
-let mousemove_pos= { x: 0, y: 0 }; // mousemove postiion object
 const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
 	pos= {
 		x: e.pageX-wrap.getBoundingClientRect().left,
 		y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
 	};
 	let digree= GetDigree(pos.x, Balls[0].x, pos.y, Balls[0].y); // get digree between mousedown_position and ball_position
-	console.log(digree);
 	if(Math.abs(digree)<100){ // 공과 마우스 커서 사이 각도가 100도 이하이면 최솟값으로 변경
 		let point= 
 			digree>0
 			? GetPointFromDigree(Balls[0].x, Balls[0].y, -10, 3)
 			: GetPointFromDigree(Balls[0].x, Balls[0].y, -170, 3);
-		Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
+		GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y));
 		return;
 	} 
 	if(ms && ctx.isPointInPath(Balls[0].path, mousemove_pos.x, mousemove_pos.y)) return;
 	digree= digree<0? -270-(digree): 90-(digree);
 	let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
-	Balls[0].GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y), 0);
+	GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y));
 }
-function display(){ // display function
+const display= () =>{ // display function
 	clear(); // clear canvas
 	for(var i=Blocks.length-1; i>=0; i--) // block draw
 		if(Blocks[i] != undefined)
@@ -309,12 +307,12 @@ function display(){ // display function
 		Balls[0].draw();
 	}
 	if(mousestate === 1)
-		Balls[0].DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
+		DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
 	requestAnimationFrame(_ =>{
 		setTimeout(display, 1000/60);
 	});
 }
-function callback(){ // 공 날라갔다가 돌아왔을때
+const callback= () =>{ // 공 날라갔다가 돌아왔을때
 	for(var i=0, len= Blocks.length; i<len; i++){
 		Blocks[i].t++;
 		Blocks[i].Y_min= Blocks[i].t*Blocks[i].h+0.5;
@@ -378,21 +376,6 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 			bl.push(l);
 		}
 	}
-	// 여기서 블럭 색깔 지정해줌
-	/*
-		블럭들 cnt를 배열에 넣고 내림차순 정렬해주고 배열에 idx값에 맞게 색깔넣기?
-		let cs= [];
-		for(var i=0, len= Blocks.length; i<len; i++){
-			cs.push(Blocks[i].cnt);
-		}
-		cs= cs.sort((a,b)=>b-a).filter( (v,idx) => cs.indexOf(v)===idx);
-		for(var i=0, len= cs.length; i<len; i++){
-			for(var j=0;j<Blocks.length; j++){
-				if(Blocks[j].cnt===cs[i])
-					Blocks[j].c= C;
-			}
-		}
-	*/
 	for(var i=0, len= Blocks.length; i<len; i++)
 		Blocks[i].c= C;
 	for(var i=0; i<bl.length; i++){
@@ -417,8 +400,8 @@ function callback(){ // 공 날라갔다가 돌아왔을때
 	document.querySelector(".score").innerText= turn;
 	document.querySelector(".b").innerText= Balls.length;
 }
-function Ball_update (){
-	for(var i=0; i<Balls.length; i++){
+const Ball_update= _ =>{
+	for(var i=0, len= Balls.length; i<len; i++){
 		if(!Balls[i].isShoot)
 			continue;
 		if(Balls[i].update()){
@@ -435,17 +418,17 @@ function Ball_update (){
 	}
 	setTimeout(function (){
 		Ball_update();
-	}, 500/FPS);
+	}, 1000/144);
 }
-function balls_shoot(i, t){
-		Balls[i].isShoot= true;
-		return new Promise( (res, rej)=> {
-			setTimeout(_ =>{
-				return res(i);
-			}, 1000 / FPS * t);
-		});
+const balls_shoot= (i, t) =>{
+	Balls[i].isShoot= true;
+	return new Promise( (res, rej)=> {
+		setTimeout(_ =>{
+			return res(i);
+		}, 1000 / 144 * t);
+	});
 }
-function eve (){
+const eve= () =>{
 	canvas.addEventListener("mousedown", function (e){
 		if(mousestate === 2) return; // mouseup 한 상태이면
 		mousestate= 1; // mousedown 한 상태
@@ -463,16 +446,12 @@ function eve (){
 			max= Math.max(Balls[0].dx, Balls[0].dy);
 			let x= Balls[0].x;
 			let y= Balls[0].y;
-			let AddCount= 0;
-			while(1){
-				x+= Balls[0].dx;
-				y-= Balls[0].dy;
-				AddCount++;
-				if(!Checkdistance(x, y, Balls[0].x, Balls[0].y, 15))
-					break;
-			}
+			let digree= GetDigree(Balls[0].x+Balls[0].dx, Balls[0].x, Balls[0].y-Balls[0].dy, Balls[0].y);
+			digree= digree<0? -270-(digree): 90-(digree);
+			let point= GetPointFromDigree(Balls[0].x, Balls[0].y, digree, 30);
+			let tick= Math.abs(Math.floor(Math.abs(point.x - Balls[0].x) / Balls[0].dx));
 			for(var i=0; i<Balls.length; i++){
-				let s= await balls_shoot(i, AddCount);
+				let s= await balls_shoot(i, tick);
 			}
 			turn++;
 		}
@@ -484,8 +463,8 @@ function eve (){
 		}
 	}
 }
-
-window.onload= function (){
+/* //function */
+window.onload= () =>{
 	Balls.push(new ball());
 	Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
 	Blocks.push(new Block({l: 5, t: 1, cnt: turn}));
