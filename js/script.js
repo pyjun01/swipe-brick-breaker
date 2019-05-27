@@ -118,14 +118,7 @@ function Block (option){
 	this.Y_min= this.t*this.h+1;
 	this.X_max= this.X_min+this.w-2;
 	this.Y_max= this.Y_min+this.h-2;
-
 	this.cnt= option.cnt;
-	// Blocks.reduce( (max, v) => {
-
-	// });
-	for(var i=0, len=Blocks.length; i<len; i++){
-
-	}
 	this.c= C;
 }
 Block.prototype.draw = function (){
@@ -164,6 +157,36 @@ AddBall.prototype.draw = function() {
 };
 /* //object */
 /* function */
+const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)); // 두 점 사이의 거리를 구함
+const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len}); // 각도를 통해 새로운 위치 가져옴
+const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI; // 점 두개로 각도 구함
+const getPoint= (v, min, max) =>{ // return pointX or pointY
+	if(v <= min || v >= max)
+		return Math.abs(max-v) < Math.abs(min-v)? max: min;
+	return v;
+}
+const display= () =>{ // display function
+	clear(); // clear canvas
+	for(var i=Blocks.length-1; i>=0; i--) // block draw
+		if(Blocks[i] != undefined)
+			Blocks[i].draw();
+	for(var i=0, len= AddBalls.length; i<len; i++) // addball draw
+		if(AddBalls[i] != undefined)
+			AddBalls[i].draw();
+	if(mousestate === 2){ // 공을 날렸으면
+		for(var i=0, len= Balls.length; i<len; i++)
+			if(Balls[i] != undefined)
+				Balls[i].draw();
+	}else{ // 공이 바닥에 있을때
+		Balls[0].draw();
+	}
+	if(mousestate === 1)
+		DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
+	requestAnimationFrame(_ =>{
+		setTimeout(display, 1000/60);
+	});
+}
+const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas clear
 const GetPath= (lx, ly) =>{ // get path
 	ly*= -1;
 	for(var i=0, len= Balls.length; i<len; i++){
@@ -231,16 +254,41 @@ const DrawPath= c =>{ // line animation & ball draw
 	tg.draw("#7cd3ff", tx, ty);
 	tg.draw();
 }
-const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)); // 두 점 사이의 거리를 구함
-const GetPointFromDigree= (x, y, digree, len= 15) => new Object({x: x + Math.cos(digree*(Math.PI/180))*len, y: y + Math.sin(digree*(Math.PI/180))*len}); // 각도를 통해 새로운 위치 가져옴
-const clear= _ => ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas clear
-const GetDigree= (x1, x2, y1, y2) => Math.atan2(x1 - x2, y1 - y2) * 180 / Math.PI; // 점 두개로 각도 구함
-const getPoint= (v, min, max) =>{ // return pointX or pointY
-	if(v <= min || v >= max)
-		return Math.abs(max-v) < Math.abs(min-v)? max: min;
-	return v;
+const eve= () =>{
+	canvas.addEventListener("mousedown", function (e){
+		if(mousestate === 2) return; // mouseup 한 상태이면
+		mousestate= 1; // mousedown 한 상태
+		onMouse(e);
+	});
+	window.addEventListener("mousemove", function (e){
+		if(mousestate === 1) onMouse(e, 1); // mousedown 한 상태이면
+	});
+	window.addEventListener("mouseup", async function (e){
+		if(mousestate === 1){ // if mousedown
+			mousestate= 2; // mousestate= mouseup
+			ctx.lineDashOffset= 0; // 예상 경로 초기화
+			Shootcnt= Balls.length; // ball 개수만큼 Shootcnt 설정
+			Ball_update(); // 공 업데이트
+			max= Math.max(Balls[0].dx, Balls[0].dy);
+			let x= Balls[0].x;
+			let y= Balls[0].y;
+			let digree= GetDigree(Balls[0].x+Balls[0].dx, Balls[0].x, Balls[0].y-Balls[0].dy, Balls[0].y);
+			digree= digree<0? -270-(digree): 90-(digree);
+			let point= GetPointFromDigree(Balls[0].x, Balls[0].y, digree, 30);
+			let tick= Math.abs(Math.floor(Math.abs(point.x - Balls[0].x) / Balls[0].dx));
+			for(var i=0; i<Balls.length; i++){
+				let s= await balls_shoot(i, tick);
+			}
+			turn++;
+		}
+	});
+	let radio= document.querySelectorAll("input[type='radio']");
+	for(let i=0, len= radio.length; i<len; i++){
+		radio[i].onclick= function (){
+			FPS= this.value*60;
+		}
+	}
 }
-const end= _ => {}; // 게임 끝났을때
 const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
 	pos= {
 		x: e.pageX-wrap.getBoundingClientRect().left,
@@ -260,26 +308,25 @@ const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
 	let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
 	GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y));
 }
-const display= () =>{ // display function
-	clear(); // clear canvas
-	for(var i=Blocks.length-1; i>=0; i--) // block draw
-		if(Blocks[i] != undefined)
-			Blocks[i].draw();
-	for(var i=0, len= AddBalls.length; i<len; i++) // addball draw
-		if(AddBalls[i] != undefined)
-			AddBalls[i].draw();
-	if(mousestate === 2){ // 공을 날렸으면
-		for(var i=0, len= Balls.length; i<len; i++)
-			if(Balls[i] != undefined)
-				Balls[i].draw();
-	}else{ // 공이 바닥에 있을때
-		Balls[0].draw();
+const Ball_update= _ =>{
+	for(var i=0, len= Balls.length; i<len; i++){
+		if(!Balls[i].isShoot)
+			continue;
+		if(Balls[i].update()){
+			Balls[i].isShoot= false;
+			if(Balls.length == Shootcnt)
+				fbid= i;
+			Shootcnt--;
+			if(Shootcnt === 0){
+				mousestate= 0;
+				callback();
+				return;
+			}
+		}
 	}
-	if(mousestate === 1)
-		DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
-	requestAnimationFrame(_ =>{
-		setTimeout(display, 1000/60);
-	});
+	setTimeout(function (){
+		Ball_update();
+	}, 1000/144);
 }
 const callback= () =>{ // 공 날라갔다가 돌아왔을때
 	for(var i=0, len= Blocks.length; i<len; i++){
@@ -369,68 +416,14 @@ const callback= () =>{ // 공 날라갔다가 돌아왔을때
 	document.querySelector(".score").innerText= turn;
 	document.querySelector(".b").innerText= Balls.length;
 }
-const Ball_update= _ =>{
-	for(var i=0, len= Balls.length; i<len; i++){
-		if(!Balls[i].isShoot)
-			continue;
-		if(Balls[i].update()){
-			Balls[i].isShoot= false;
-			if(Balls.length == Shootcnt)
-				fbid= i;
-			Shootcnt--;
-			if(Shootcnt === 0){
-				mousestate= 0;
-				callback();
-				return;
-			}
-		}
-	}
-	setTimeout(function (){
-		Ball_update();
-	}, 1000/144);
-}
+const end= _ => {}; // 게임 끝났을때
 const balls_shoot= (i, t) =>{
-	Balls[i].isShoot= true;
 	return new Promise( (res, rej)=> {
+		Balls[i].isShoot= true;
 		setTimeout(_ =>{
 			return res(i);
 		}, 1000 / 144 * t);
 	});
-}
-const eve= () =>{
-	canvas.addEventListener("mousedown", function (e){
-		if(mousestate === 2) return; // mouseup 한 상태이면
-		mousestate= 1; // mousedown 한 상태
-		onMouse(e);
-	});
-	window.addEventListener("mousemove", function (e){
-		if(mousestate === 1) onMouse(e, 1); // mousedown 한 상태이면
-	});
-	window.addEventListener("mouseup", async function (e){
-		if(mousestate === 1){ // if mousedown
-			mousestate= 2; // mousestate= mouseup
-			ctx.lineDashOffset= 0; // 예상 경로 초기화
-			Shootcnt= Balls.length; // ball 개수만큼 Shootcnt 설정
-			Ball_update(); // 공 업데이트
-			max= Math.max(Balls[0].dx, Balls[0].dy);
-			let x= Balls[0].x;
-			let y= Balls[0].y;
-			let digree= GetDigree(Balls[0].x+Balls[0].dx, Balls[0].x, Balls[0].y-Balls[0].dy, Balls[0].y);
-			digree= digree<0? -270-(digree): 90-(digree);
-			let point= GetPointFromDigree(Balls[0].x, Balls[0].y, digree, 30);
-			let tick= Math.abs(Math.floor(Math.abs(point.x - Balls[0].x) / Balls[0].dx));
-			for(var i=0; i<Balls.length; i++){
-				let s= await balls_shoot(i, tick);
-			}
-			turn++;
-		}
-	});
-	let radio= document.querySelectorAll("input[type='radio']");
-	for(let i=0, len= radio.length; i<len; i++){
-		radio[i].onclick= function (){
-			FPS= this.value*60;
-		}
-	}
 }
 /* //function */
 window.onload= () =>{
