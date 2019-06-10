@@ -29,7 +29,142 @@ let mousedown_pos= { x: 0, y: 0 }; // mousedown postiion object
 let mousemove_pos= { x: 0, y: 0 }; // mousemove postiion object
 let tg, ax, ay, over, B; // GetPath, DrawPath
 /* object */
-function ball(x, y){
+class ball {
+	constructor (x, y){
+		this.path= new Path2D(); // Path2D
+		this.radius= 10; // 반지름
+		this.x= x? x: W / 2; // x 좌표 값
+		this.y= y? y: H-10; // y 좌표 값
+		this.dx= 0; // 1 FPS당 움직이는 X 값
+		this.dy= 0; // 1 FPS당 움직이는 Y 값
+		this.isShoot= false; // 날아가고 있는지
+	}
+	draw (c= "#4bbcf4", x= this.x, y= this.y){
+		this.path= new Path2D();
+		ctx.save();
+		ctx.fillStyle= c;
+		this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
+		ctx.fill(this.path);
+		ctx.restore();
+	}
+	update (){
+		this.x+= this.dx;
+		this.y+= this.dy;
+		if(this.x+this.radius>=canvas.width || this.x<=this.radius){
+			this.x= this.x+this.radius>=canvas.width? canvas.width-this.radius: this.radius;
+			this.dx= this.dx*-1;
+		}
+		if(this.y+this.radius>=canvas.height || this.y<=this.radius){
+			this.y= this.y+this.radius>=canvas.height? canvas.height-this.radius: this.radius;
+			this.dy= this.dy*-1;
+		}
+		for(var i=0, len= Blocks.length; i<len; i++){
+			if(Blocks[i] == undefined || Math.abs(Blocks[i].X_min-this.x) > 150)
+				continue;
+			let b= Blocks[i];
+			let pointX= getPoint(this.x, b.X_min, b.X_max);
+			let pointY= getPoint(this.y, b.Y_min, b.Y_max);
+			if(Checkdistance(this.x, this.y, pointX, pointY)){
+				if( (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max) ){
+					console.log("corner");
+				}
+				let nx = this.x - pointX;
+				let ny = this.y - pointY;
+				let len = Math.sqrt(nx * nx + ny * ny); // 공과 모서리 사이 거리
+				if(len <= this.radius && ( pointX == b.X_min || pointX == b.X_max) && ( pointY == b.Y_min || pointY == b.Y_max)){
+					nx /= len;
+					ny /= len;
+					let projection = this.dx * nx + this.dy * ny;
+					this.dx = this.dx - 2 * projection * nx;
+					this.dy = this.dy - 2 * projection * ny;
+					if(Math.abs(this.dy) < 0.2)
+						this.dy+= this.dy<0? -0.2: 0.2;
+				}else{
+					if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
+						this.x= pointX==b.X_max? pointX+10: pointX-10;
+						this.dx*=-1;
+					}
+					if(pointY == b.Y_max || pointY == b.Y_min){
+						this.y= pointY==b.Y_max? pointY+10: pointY-10;
+						this.dy*=-1;
+					}
+				}
+
+				b.cnt--;
+				if(b.cnt<=0)
+					Blocks.splice(i, 1)
+			}
+		}
+		for(var i=0, len= AddBalls.length; i<len; i++){
+			if(AddBalls[i] == undefined)
+				continue;
+			var A= AddBalls[i];
+			var pointX= A.l * Block_width + (Block_width/2);
+			var pointY= A.t * Block_height + (Block_height/2);
+			if(Checkdistance(this.x, this.y, pointX, pointY, A.radius+this.radius-1)){
+				AddBalls.splice(i, 1);
+				should_Add++;
+			}
+		}
+		if(this.y+this.radius>=canvas.height){
+			return true;
+		}
+		return false;
+	}
+}
+class Block {
+	constructor (option){
+		this.w= W/6;
+		this.h= H/9;
+		this.l= option.l;
+		this.t= option.t;
+
+		this.X_min= this.l*this.w+1;
+		this.Y_min= this.t*this.h+1;
+		this.X_max= this.X_min+this.w-2;
+		this.Y_max= this.Y_min+this.h-2;
+		this.cnt= option.cnt;
+		this.c= C;
+	}
+	draw (){
+		ctx.save();
+		ctx.fillStyle= "rgba(0, 0, 0, 0.2)";
+		ctx.fillRect(this.l*this.w+3.5, this.t*this.h+5.5, this.w-2, this.h-2);
+		ctx.fillStyle= this.c;
+		ctx.fillRect(this.l*this.w+1, this.t*this.h+1, this.w-2, this.h-2);
+		ctx.fillStyle= "#fff";
+		ctx.font = "bold 20px sans-serif";
+		ctx.textAlign = "center";
+		ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
+		ctx.restore();
+	};
+}
+class	AddBall {
+	constructor (option){
+		this.radius= 15;
+		this.l= option.l;
+		this.t= option.t;
+	}
+	draw (){
+		ctx.save();
+		ctx.beginPath();
+		ctx.strokeStyle= "#69db7c";
+		ctx.setLineDash([0,0]);
+		ctx.lineWidth= 3;
+		ctx.lineDashOffset= 0;
+		ctx.arc(this.l*Block_width+(Block_width/2), this.t*Block_height+(Block_height/2), this.radius, 0, 2 * Math.PI);
+		ctx.stroke();
+		ctx.closePath();
+		ctx.beginPath();
+		ctx.fillStyle= "#69db7c";
+		ctx.arc(this.l*Block_width+(Block_width/2), this.t*Block_height+(Block_height/2), 9, 0, Math.PI*2);
+		ctx.fill();
+		ctx.closePath();
+		ctx.restore();
+	};
+}
+
+/*function ball(x, y){
 	this.path= new Path2D(); // Path2D
 	this.radius= 10; // 반지름
 	this.x= x? x: W / 2; // x 좌표 값
@@ -38,7 +173,7 @@ function ball(x, y){
 	this.dy= 0; // 1 FPS당 움직이는 Y 값
 	this.isShoot= false; // 날아가고 있는지
 }
-ball.prototype.draw = function (c= "#4BBCF4", x= this.x, y= this.y){
+ball.prototype.draw = function (c= "#4bbcf4", x= this.x, y= this.y){
 	this.path= new Path2D();
 	ctx.save();
 	ctx.fillStyle= c;
@@ -76,6 +211,8 @@ ball.prototype.update= function (){
 				let projection = this.dx * nx + this.dy * ny;
 				this.dx = this.dx - 2 * projection * nx;
 				this.dy = this.dy - 2 * projection * ny;
+				if(Math.abs(this.dy) < 0.2)
+					this.dy+= this.dy<0? -0.2: 0.2;
 			}else{
 				if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
 					this.x= pointX==b.X_max? pointX+10: pointX-10;
@@ -107,8 +244,8 @@ ball.prototype.update= function (){
 		return true;
 	}
 	return false;
-}
-function Block (option){
+}*/
+/*function Block (option){
 	this.w= W/6;
 	this.h= H/9;
 	this.l= option.l;
@@ -132,8 +269,8 @@ Block.prototype.draw = function (){
 	ctx.textAlign = "center";
 	ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
 	ctx.restore();
-};
-function AddBall (option){
+};*/
+/*function AddBall (option){
 	this.radius= 15;
 	this.l= option.l;
 	this.t= option.t;
@@ -154,7 +291,7 @@ AddBall.prototype.draw = function() {
 	ctx.fill();
 	ctx.closePath();
 	ctx.restore();
-};
+};*/
 /* //object */
 /* function */
 const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)); // 두 점 사이의 거리를 구함
