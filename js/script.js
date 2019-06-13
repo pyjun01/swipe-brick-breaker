@@ -325,6 +325,12 @@ const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
 	GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y));
 }
 const Ball_update= _ =>{
+	if(Blocks.length == 0 && AddBalls.length == 0 && Balls[fbid]){
+		Shootcnt= 0;
+		return callback();
+	}else{
+		// console.log(Blocks.length, AddBalls.length);
+	}
 	for(var i=0, len= Balls.length; i<len; i++){
 		if(!Balls[i].isShoot)
 			continue;
@@ -335,13 +341,12 @@ const Ball_update= _ =>{
 			Shootcnt--;
 			if(Shootcnt === 0){
 				mousestate= 0;
-				callback();
-				return;
+				return callback();
 			}
 		}
 	}
 	setTimeout(function (){
-		Ball_update();
+		return Ball_update();
 	}, 1000/144);
 }
 const callback= async () =>{ // 공 날라갔다가 돌아왔을때
@@ -446,10 +451,12 @@ const callback= async () =>{ // 공 날라갔다가 돌아왔을때
 	document.querySelector(".score").innerText= turn;
 	document.querySelector(".b").innerText= Balls.length;
 	Iscallback= false;
+	fbid= null;
 }
 const Ball_Gather= _ =>{
 	let distance= [];
 	for(var i=0, len= Balls.length; i<len; i++){
+		Balls[i].y= Balls[fbid].y;
 		let dis= fbid == i? 0: (Balls[fbid].x - Balls[i].x) / 20;
 		distance.push( dis );
 	}
