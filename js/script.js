@@ -28,6 +28,7 @@ let wrap= document.querySelector("#app"); // wrapper tag
 let mousedown_pos= { x: 0, y: 0 }; // mousedown postiion object
 let mousemove_pos= { x: 0, y: 0 }; // mousemove postiion object
 let tg, ax, ay, over, B; // GetPath, DrawPath
+let Iscallback= false;
 /* object */
 class ball {
 	constructor (x, y){
@@ -65,9 +66,9 @@ class ball {
 			let pointX= getPoint(this.x, b.X_min, b.X_max);
 			let pointY= getPoint(this.y, b.Y_min, b.Y_max);
 			if(Checkdistance(this.x, this.y, pointX, pointY)){
-				if( (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max) ){
-					console.log("corner");
-				}
+				// if( (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max) ){
+				// 	console.log("corner");
+				// }
 				let nx = this.x - pointX;
 				let ny = this.y - pointY;
 				let len = Math.sqrt(nx * nx + ny * ny); // 공과 모서리 사이 거리
@@ -163,135 +164,6 @@ class	AddBall {
 		ctx.restore();
 	};
 }
-
-/*function ball(x, y){
-	this.path= new Path2D(); // Path2D
-	this.radius= 10; // 반지름
-	this.x= x? x: W / 2; // x 좌표 값
-	this.y= y? y: H-10; // y 좌표 값
-	this.dx= 0; // 1 FPS당 움직이는 X 값
-	this.dy= 0; // 1 FPS당 움직이는 Y 값
-	this.isShoot= false; // 날아가고 있는지
-}
-ball.prototype.draw = function (c= "#4bbcf4", x= this.x, y= this.y){
-	this.path= new Path2D();
-	ctx.save();
-	ctx.fillStyle= c;
-	this.path.arc(x, y, this.radius, 0, 2*Math.PI, false);
-	ctx.fill(this.path);
-	ctx.restore();
-};
-ball.prototype.update= function (){
-	this.x+= this.dx;
-	this.y+= this.dy;
-	if(this.x+this.radius>=canvas.width || this.x<=this.radius){
-		this.x= this.x+this.radius>=canvas.width? canvas.width-this.radius: this.radius;
-		this.dx= this.dx*-1;
-	}
-	if(this.y+this.radius>=canvas.height || this.y<=this.radius){
-		this.y= this.y+this.radius>=canvas.height? canvas.height-this.radius: this.radius;
-		this.dy= this.dy*-1;
-	}
-	for(var i=0, len= Blocks.length; i<len; i++){
-		if(Blocks[i] == undefined || Math.abs(Blocks[i].X_min-this.x) > 150)
-			continue;
-		let b= Blocks[i];
-		let pointX= getPoint(this.x, b.X_min, b.X_max);
-		let pointY= getPoint(this.y, b.Y_min, b.Y_max);
-		if(Checkdistance(this.x, this.y, pointX, pointY)){
-			if( (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max) ){
-				console.log("corner");
-			}
-			let nx = this.x - pointX;
-			let ny = this.y - pointY;
-			let len = Math.sqrt(nx * nx + ny * ny); // 공과 모서리 사이 거리
-			if(len <= this.radius && ( pointX == b.X_min || pointX == b.X_max) && ( pointY == b.Y_min || pointY == b.Y_max)){
-				nx /= len;
-				ny /= len;
-				let projection = this.dx * nx + this.dy * ny;
-				this.dx = this.dx - 2 * projection * nx;
-				this.dy = this.dy - 2 * projection * ny;
-				if(Math.abs(this.dy) < 0.2)
-					this.dy+= this.dy<0? -0.2: 0.2;
-			}else{
-				if(pointX == b.X_max || pointX == b.X_min){ // 공의 중심점의 x좌표가 블록 x좌표 범위 밖에 있음
-					this.x= pointX==b.X_max? pointX+10: pointX-10;
-					this.dx*=-1;
-				}
-				if(pointY == b.Y_max || pointY == b.Y_min){
-					this.y= pointY==b.Y_max? pointY+10: pointY-10;
-					this.dy*=-1;
-				}
-			}
-
-			b.cnt--;
-			if(b.cnt<=0)
-				Blocks.splice(i, 1)
-		}
-	}
-	for(var i=0, len= AddBalls.length; i<len; i++){
-		if(AddBalls[i] == undefined)
-			continue;
-		var A= AddBalls[i];
-		var pointX= A.l * Block_width + (Block_width/2);
-		var pointY= A.t * Block_height + (Block_height/2);
-		if(Checkdistance(this.x, this.y, pointX, pointY, A.radius+this.radius-1)){
-			AddBalls.splice(i, 1);
-			should_Add++;
-		}
-	}
-	if(this.y+this.radius>=canvas.height){
-		return true;
-	}
-	return false;
-}*/
-/*function Block (option){
-	this.w= W/6;
-	this.h= H/9;
-	this.l= option.l;
-	this.t= option.t;
-
-	this.X_min= this.l*this.w+1;
-	this.Y_min= this.t*this.h+1;
-	this.X_max= this.X_min+this.w-2;
-	this.Y_max= this.Y_min+this.h-2;
-	this.cnt= option.cnt;
-	this.c= C;
-}
-Block.prototype.draw = function (){
-	ctx.save();
-	ctx.fillStyle= "rgba(0, 0, 0, 0.2)";
-	ctx.fillRect(this.l*this.w+3.5, this.t*this.h+5.5, this.w-2, this.h-2);
-	ctx.fillStyle= this.c;
-	ctx.fillRect(this.l*this.w+1, this.t*this.h+1, this.w-2, this.h-2);
-	ctx.fillStyle= "#fff";
-	ctx.font = "bold 20px sans-serif";
-	ctx.textAlign = "center";
-	ctx.fillText(this.cnt, this.l*this.w+1+(this.w-2)/2, this.t*this.h+1+(this.h-2)/2+6); 
-	ctx.restore();
-};*/
-/*function AddBall (option){
-	this.radius= 15;
-	this.l= option.l;
-	this.t= option.t;
-}
-AddBall.prototype.draw = function() {
-	ctx.save();
-	ctx.beginPath();
-	ctx.strokeStyle= "#69db7c";
-	ctx.setLineDash([0,0]);
-	ctx.lineWidth= 3;
-	ctx.lineDashOffset= 0;
-	ctx.arc(this.l*Block_width+(Block_width/2), this.t*Block_height+(Block_height/2), this.radius, 0, 2 * Math.PI);
-	ctx.stroke();
-	ctx.closePath();
-	ctx.beginPath();
-	ctx.fillStyle= "#69db7c";
-	ctx.arc(this.l*Block_width+(Block_width/2), this.t*Block_height+(Block_height/2), 9, 0, Math.PI*2);
-	ctx.fill();
-	ctx.closePath();
-	ctx.restore();
-};*/
 /* //object */
 /* function */
 const Checkdistance= (x1, y1, x2, y2, distance= 10) => distance >= Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)); // 두 점 사이의 거리를 구함
@@ -310,12 +182,19 @@ const display= () =>{ // display function
 	for(var i=0, len= AddBalls.length; i<len; i++) // addball draw
 		if(AddBalls[i] != undefined)
 			AddBalls[i].draw();
-	if(mousestate === 2){ // 공을 날렸으면
+
+	if(Iscallback){
 		for(var i=0, len= Balls.length; i<len; i++)
 			if(Balls[i] != undefined)
 				Balls[i].draw();
-	}else{ // 공이 바닥에 있을때
-		Balls[0].draw();
+	}else{
+		if(mousestate === 2){ // 공을 날렸으면
+			for(var i=0, len= Balls.length; i<len; i++)
+				if(Balls[i] != undefined)
+					Balls[i].draw();
+		}else{ // 공이 바닥에 있을때
+			Balls[0].draw();
+		}
 	}
 	if(mousestate === 1)
 		DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
@@ -393,7 +272,7 @@ const DrawPath= c =>{ // line animation & ball draw
 }
 const eve= () =>{
 	canvas.addEventListener("mousedown", function (e){
-		if(mousestate === 2) return; // mouseup 한 상태이면
+		if(mousestate === 2 || Iscallback) return; // mouseup 한 상태이면
 		mousestate= 1; // mousedown 한 상태
 		onMouse(e);
 	});
@@ -407,12 +286,12 @@ const eve= () =>{
 			Shootcnt= Balls.length; // ball 개수만큼 Shootcnt 설정
 			Ball_update(); // 공 업데이트
 			max= Math.max(Balls[0].dx, Balls[0].dy);
-			let x= Balls[0].x;
-			let y= Balls[0].y;
-			let digree= GetDigree(Balls[0].x+Balls[0].dx, Balls[0].x, Balls[0].y-Balls[0].dy, Balls[0].y);
+			let b0= Balls[0];
+			
+			let digree= GetDigree(b0.x + b0.dx, b0.x, b0.y - b0.dy, b0.y);
 			digree= digree<0? -270-(digree): 90-(digree);
-			let point= GetPointFromDigree(Balls[0].x, Balls[0].y, digree, 30);
-			let tick= Math.abs(Math.floor(Math.abs(point.x - Balls[0].x) / Balls[0].dx));
+			let point= GetPointFromDigree(b0.x, b0.y, digree, 30);
+			let tick= Math.abs(Math.floor(Math.abs(point.x - b0.x) / b0.dx));
 			for(var i=0; i<Balls.length; i++){
 				let s= await balls_shoot(i, tick);
 			}
@@ -465,11 +344,13 @@ const Ball_update= _ =>{
 		Ball_update();
 	}, 1000/144);
 }
-const callback= () =>{ // 공 날라갔다가 돌아왔을때
+const callback= async () =>{ // 공 날라갔다가 돌아왔을때
+	Iscallback= true;
+	/* block, addball update */
 	for(var i=0, len= Blocks.length; i<len; i++){
 		Blocks[i].t++;
-		Blocks[i].Y_min= Blocks[i].t*Blocks[i].h+0.5;
-		Blocks[i].Y_max= Blocks[i].Y_min+Blocks[i].h-1;
+		Blocks[i].Y_min+= Blocks[i].h;
+		Blocks[i].Y_max+= Blocks[i].h;
 		if(Blocks[i].t==8)
 			end();
 	}
@@ -482,7 +363,8 @@ const callback= () =>{ // 공 날라갔다가 돌아왔을때
 			}
 		}
 	}
-	// Math.floor(turn/10); // 0 1 2 3 4 5
+	/* //block, addball update */
+	/* block cnt */
 	let cnt= 0;
 	let getrandomcnt;
 	switch(Math.floor(turn/10)){
@@ -509,17 +391,18 @@ const callback= () =>{ // 공 날라갔다가 돌아왔을때
 				cnt= 4;
 			}
 			break;
+		default:
+			getrandomcnt= Math.floor(Math.random()*(10))+1;
+			if(getrandomcnt<=4){
+				cnt= 3;
+			}else if(getrandomcnt<=9){
+				cnt= 4;
+			}else{
+				cnt= 5;
+			}
 	}
-	if(Math.floor(turn/10)>=3){
-		getrandomcnt= Math.floor(Math.random()*(10))+1;
-		if(getrandomcnt<=4){
-			cnt= 3;
-		}else if(getrandomcnt<=9){
-			cnt= 4;
-		}else{
-			cnt= 5;
-		}
-	}
+	/* //block cnt */
+	/* block */
 	var bl= [];
 	for(var i=0; i<cnt; i++){
 		let l= Math.floor(Math.random()*6);
@@ -529,29 +412,65 @@ const callback= () =>{ // 공 날라갔다가 돌아왔을때
 			bl.push(l);
 		}
 	}
-	for(var i=0, len= Blocks.length; i<len; i++)
+	for(var i=0, len= Blocks.length; i<len; i++){
 		Blocks[i].c= C;
+	}
 	for(var i=0; i<bl.length; i++){
 		Blocks.push(new Block({l: bl[i], t: 1, cnt: turn}));
 	}
-	function ab(){
-		let l= Math.floor(Math.random()*5);
+	/* //block */
+	/* addvall */
+	function recursive(){
+		let l= Math.floor(Math.random()*6);
 		if(bl.includes(l)){
-			ab();
+			recursive();
 		}else{
 			AddBalls.push(new AddBall({l: l, t: 1}));
 		}
 	}
-	ab();
-	for(var i=0; i<should_Add; i++)
-		Balls.push(new ball(Balls[0].x, Balls[0].y));
-	should_Add= 0;
-	for(var i=0, len= Balls.length; i<len; i++){
-		Balls[i].x= Balls[fbid].x;
-		Balls[i].y= Balls[fbid].y;
+	recursive();
+	/* //addvall */
+	/* ball */
+	for(var i=0; i<should_Add; i++){
+		Balls.push(new ball(Balls[fbid].x, Balls[fbid].y));
 	}
+	should_Add= 0;
+	console.log(fbid);
+	console.log(Balls[fbid]);
+	await Ball_Gather();
+	// for(var i=0, len= Balls.length; i<len; i++){
+	// 	Balls[i].x= Balls[fbid].x;
+	// 	Balls[i].y= Balls[fbid].y;
+	// }
+	/* //ball */
 	document.querySelector(".score").innerText= turn;
 	document.querySelector(".b").innerText= Balls.length;
+	Iscallback= false;
+}
+const Ball_Gather= _ =>{
+	let distance= [];
+	for(var i=0, len= Balls.length; i<len; i++){
+		let dis= fbid == i? 0: (Balls[fbid].x - Balls[i].x) / 20;
+		distance.push( dis );
+	}
+	return new Promise(res =>{
+		function recursive (n){
+			for(var i=0, len= Balls.length; i<len; i++){
+				Balls[i].x+= distance[i];
+			}
+			setTimeout( _ =>{
+				if(n < 20-1){
+					recursive(n+1);
+				}else{
+					for(var i=0, len= Balls.length; i<len; i++){
+						Balls[i].x= Balls[fbid].x;
+					}
+					res(true);
+				}
+			}, 1000 / 60);
+		}
+		recursive(0);
+	})
 }
 const end= _ => {}; // 게임 끝났을때
 const balls_shoot= (i, t) =>{
