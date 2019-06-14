@@ -23,7 +23,7 @@ let tx= 0, ty= 0; // 예상경로 ball
 let Balls= []; // Ball array
 let Blocks= []; // 블록 array
 let AddBalls= []; // 공 추가하는거 array
-let fbid= 0; // 바닥에 닿은 첫번째 공의 idx
+let fbid= null; // 바닥에 닿은 첫번째 공의 idx
 let wrap= document.querySelector("#app"); // wrapper tag
 let mousedown_pos= { x: 0, y: 0 }; // mousedown postiion object
 let mousemove_pos= { x: 0, y: 0 }; // mousemove postiion object
@@ -39,8 +39,9 @@ class ball {
 		this.dx= 0; // 1 FPS당 움직이는 X 값
 		this.dy= 0; // 1 FPS당 움직이는 Y 값
 		this.isShoot= false; // 날아가고 있는지
+		this.opacity= 1;
 	}
-	draw (c= "#4bbcf4", x= this.x, y= this.y){
+	draw (c= `rgba(75, 188, 244, ${this.opacity || 1})`, x= this.x, y= this.y){
 		this.path= new Path2D();
 		ctx.save();
 		ctx.fillStyle= c;
@@ -295,6 +296,7 @@ const eve= () =>{
 			for(var i=0; i<Balls.length; i++){
 				let s= await balls_shoot(i, tick);
 			}
+			console.log(Balls.map(v => v.opacity));
 			turn++;
 		}
 	});
@@ -326,8 +328,8 @@ const onMouse= (e, ms= 1) =>{ // mousedown, mousemove event
 }
 const Ball_update= _ =>{
 	if(Blocks.length == 0 && AddBalls.length == 0 && Balls[fbid]){
-		Shootcnt= 0;
-		return callback();
+		// console.log(fbid);
+		return smoothCallback(0);
 	}else{
 		// console.log(Blocks.length, AddBalls.length);
 	}
@@ -336,8 +338,9 @@ const Ball_update= _ =>{
 			continue;
 		if(Balls[i].update()){
 			Balls[i].isShoot= false;
-			if(Balls.length == Shootcnt)
+			if(Balls.length == Shootcnt){
 				fbid= i;
+			}
 			Shootcnt--;
 			if(Shootcnt === 0){
 				mousestate= 0;
@@ -349,9 +352,46 @@ const Ball_update= _ =>{
 		return Ball_update();
 	}, 1000/144);
 }
+
+const smoothCallback= n =>{
+	if(n>=72){
+		Shootcnt= 0;
+		mousestate= 0;
+		for(var i=0, len= Balls.length; i<len; i++){
+			Balls[i].x= Balls[fbid].x;
+			Balls[i].y= Balls[fbid].y;
+			Balls[i].opacity= 1;
+		}
+		return callback();
+		return;
+	}
+	for(var i=0, len= Balls.length; i<len; i++){
+		if(!Balls[i].isShoot)
+			continue;
+		if(Balls[i].update()){
+			Balls[i].isShoot= false;
+			Balls[i].opacity= 1;
+			Shootcnt--;
+			if(Shootcnt === 0){
+				mousestate= 0;
+				return callback();
+			}
+		}else{
+			Balls[i].opacity-= 0.01;
+		}
+	}
+	setTimeout(function (){
+		return smoothCallback(n+1);
+	}, 1000/144);
+}
 const callback= async () =>{ // 공 날라갔다가 돌아왔을때
 	Iscallback= true;
 	/* block, addball update */
+	for(var i=0, len= Balls.length; i<len; i++){
+		if(Balls[i].opacity != 1)
+			Balls[i].opacity= 1;
+	}
+
 	for(var i=0, len= Blocks.length; i<len; i++){
 		Blocks[i].t++;
 		Blocks[i].Y_min+= Blocks[i].h;
@@ -440,8 +480,6 @@ const callback= async () =>{ // 공 날라갔다가 돌아왔을때
 		Balls.push(new ball(Balls[fbid].x, Balls[fbid].y));
 	}
 	should_Add= 0;
-	console.log(fbid);
-	console.log(Balls[fbid]);
 	await Ball_Gather();
 	// for(var i=0, len= Balls.length; i<len; i++){
 	// 	Balls[i].x= Balls[fbid].x;
@@ -455,9 +493,10 @@ const callback= async () =>{ // 공 날라갔다가 돌아왔을때
 }
 const Ball_Gather= _ =>{
 	let distance= [];
+	let cnt= 10;
 	for(var i=0, len= Balls.length; i<len; i++){
 		Balls[i].y= Balls[fbid].y;
-		let dis= fbid == i? 0: (Balls[fbid].x - Balls[i].x) / 20;
+		let dis= fbid == i? 0: (Balls[fbid].x - Balls[i].x) / cnt;
 		distance.push( dis );
 	}
 	return new Promise(res =>{
@@ -466,7 +505,7 @@ const Ball_Gather= _ =>{
 				Balls[i].x+= distance[i];
 			}
 			setTimeout( _ =>{
-				if(n < 20-1){
+				if(n < cnt-1){
 					recursive(n+1);
 				}else{
 					for(var i=0, len= Balls.length; i<len; i++){
