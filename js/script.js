@@ -141,7 +141,7 @@ class Block {
 		ctx.restore();
 	};
 }
-class	AddBall {
+class AddBall {
 	constructor (option){
 		this.radius= 15;
 		this.l= option.l;
@@ -491,7 +491,7 @@ const callback= async () =>{ // 공 날라갔다가 돌아왔을때
 	Iscallback= false;
 	fbid= null;
 }
-const Ball_Gather= _ =>{
+const Ball_Gather= _ =>{ // 공 모으는 애니메이션
 	let distance= [];
 	let cnt= 10;
 	for(var i=0, len= Balls.length; i<len; i++){
