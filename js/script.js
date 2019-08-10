@@ -18,12 +18,12 @@
 	let Shootcnt= 0; // 날아가고있는 공의 개수
 	let mousestate= 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
 	let should_Add= 0; // 추가해야되는 공 cnt
-	let max= 0;
 	let px= 0, py= 0; // 예상경로 line
 	let tx= 0, ty= 0; // 예상경로 ball
 	let Balls= []; // Ball array
 	let Blocks= []; // 블록 array
 	let AddBalls= []; // 공 추가하는거 array
+	let fb;
 	let fbid= null; // 바닥에 닿은 첫번째 공의 idx
 	let wrap= document.querySelector("#app"); // wrapper tag
 	let tg, ax, ay, over, B; // GetPath, DrawPath
@@ -209,7 +209,7 @@
 					if(v) v.draw();
 				});
 			}else{ // 공이 바닥에 있을때
-				Balls[0].draw();
+				fb.draw();
 			}
 		}
 		if(mousestate === 1)
@@ -226,19 +226,18 @@
 			Balls[i].dx= lx;
 			Balls[i].dy= ly;
 		}
-		tg= Balls[0];
-		ax= tg.x, ay= tg.y;
+		ax= fb.x, ay= fb.y;
 		over= false, B= false;
-		while( (ax + tg.radius <= W || ax >= 0) || (ay + tg.radius <= canvas.height || ay >= 0) ){
+		while( (ax + fb.radius <= W || ax >= 0) || (ay + fb.radius <= canvas.height || ay >= 0) ){
 			ax+= lx;
 			ay+= ly;
 			if(!over){ // 벽
-				if(ax + tg.radius >= W || ax <= tg.radius){
-					ax= ax + tg.radius >= W?  W - tg.radius: tg.radius;
+				if(ax + fb.radius >= W || ax <= fb.radius){
+					ax= ax + fb.radius >= W?  W - fb.radius: fb.radius;
 					over= true;
 				}
-				if(ay + tg.radius >= H || ay <= tg.radius){
-					ay= ay + tg.radius >= H? H - tg.radius: tg.radius;
+				if(ay + fb.radius >= H || ay <= fb.radius){
+					ay= ay + fb.radius >= H? H - fb.radius: fb.radius;
 					over= true;
 				}
 				if(over){
@@ -277,15 +276,14 @@
 	const DrawPath= c =>{ // line animation & ball draw
 		if( mousestate % 2 === 0 || Move_cnt != c) // 방향이 다르거나 마우스클릭이 안돼있으면 return
 			return;
-		tg= Balls[0];
 		ctx.beginPath();
-		ctx.moveTo(tg.x, tg.y);
+		ctx.moveTo(fb.x, fb.y);
 		ctx.lineTo(px, py);
 		ctx.stroke();
 		ctx.closePath();
 		ctx.lineDashOffset-= 1;
-		tg.draw("#7cd3ff", tx, ty);
-		tg.draw();
+		fb.draw("#7cd3ff", tx, ty);
+		fb.draw();
 	}
 	const eve= () =>{
 		canvas.addEventListener("mousedown", onMouseDown);
@@ -312,13 +310,10 @@
 			ctx.lineDashOffset= 0; // 예상 경로 초기화
 			Shootcnt= Balls.length; // ball 개수만큼 Shootcnt 설정
 			Ball_update(); // 공 업데이트
-			max= Math.max(Balls[0].dx, Balls[0].dy);
-			let b0= Balls[0];
-			
-			let digree= GetDigree(b0.x + b0.dx, b0.x, b0.y - b0.dy, b0.y);
+			let digree= GetDigree(fb.x + fb.dx, fb.x, fb.y - fb.dy, fb.y);
 			digree= digree<0? -270-(digree): 90-(digree);
-			let point= GetPointFromDigree(b0.x, b0.y, digree, 30);
-			let tick= Math.abs(Math.floor(Math.abs(point.x - b0.x) / b0.dx));
+			let point= GetPointFromDigree(fb.x, fb.y, digree, 30);
+			let tick= Math.abs(Math.floor(Math.abs(point.x - fb.x) / fb.dx));
 			for(var i=0; i<Balls.length; i++){
 				let s= await balls_shoot(i, tick);
 			}
@@ -331,20 +326,20 @@
 			x: e.pageX-wrap.getBoundingClientRect().left,
 			y: e.pageY-wrap.getBoundingClientRect().top - document.querySelector("span").offsetHeight
 		};
-		let digree= GetDigree(pos.x, Balls[0].x, pos.y, Balls[0].y); // get digree between mousedown_position and ball_position
+		let digree= GetDigree(pos.x, fb.x, pos.y, fb.y); // get digree between mousedown_position and ball_position
 
 		let min_angle= 12; // 좌우 최소 각도
 		if(Math.abs(digree)<90+min_angle){ // 공과 마우스 커서 사이 각도가 100도 이하이면 최솟값으로 변경
 			let point= 
 				digree>0
-				? GetPointFromDigree(Balls[0].x, Balls[0].y, -min_angle, 3)
-				: GetPointFromDigree(Balls[0].x, Balls[0].y, -180+min_angle, 3);
-			GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y));
+				? GetPointFromDigree(fb.x, fb.y, -min_angle, 3)
+				: GetPointFromDigree(fb.x, fb.y, -180+min_angle, 3);
+			GetPath( (point.x - fb.x), -(point.y-fb.y));
 			return;
 		}
 		digree= digree<0? -270-(digree): 90-(digree);
-		let point= GetPointFromDigree(Balls[0].x, Balls[0]. y, digree, 3);
-		GetPath( (point.x - Balls[0].x), -(point.y-Balls[0].y));
+		let point= GetPointFromDigree(fb.x, fb. y, digree, 3);
+		GetPath( (point.x - fb.x), -(point.y-fb.y));
 	}
 	const Ball_update= () =>{
 		if(Blocks.length == 0 && AddBalls.length == 0 && Balls[fbid]){
@@ -475,6 +470,10 @@
 		/* //ball */
 		document.querySelector(".score").innerText= turn;
 		document.querySelector(".b").innerText= Balls.length;
+		Blocks= Blocks.map(v =>{
+			if(v.opacity != 1) v.opacity= 1;
+			return v;
+		});
 		Iscallback= false;
 		fbid= null;
 	}
@@ -527,6 +526,7 @@
 		Blocks.push(new Block({l: 0, t: 1, cnt: turn}));
 		Blocks.push(new Block({l: 5, t: 1, cnt: turn}));
 		AddBalls.push(new AddBall({l: 1, t: 1}));
+		fb= Balls[0];
 		eve();
 		display();
 	}
