@@ -1,7 +1,5 @@
 # Swipe brick breaker
 
-DEMO: https://pyjun01.github.io/swipe_brick_breaker/
-
 ## 할거
 
 - [X] 공 속도
@@ -13,4 +11,3 @@ DEMO: https://pyjun01.github.io/swipe_brick_breaker/
   * 블럭 색상
   * 턴끝나고 내려오는거
 - [X] 게임 종료
-- [ ] 코드 정리
