@@ -6,7 +6,6 @@ import { SoundManager } from './audio.js';
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const TOP_BAR_HEIGHT = 30;
-  let FPS = 60;
   let turn = 1;
   let W = canvas.width;
   let H = canvas.height;
@@ -16,27 +15,27 @@ import { SoundManager } from './audio.js';
   ctx.lineWidth = 2;
   /* //canvas default setting */
   const C = '#F5936C'; // default block color
-  const Block_width = W / 6; // block width
-  const Block_height = H / 9; // block height
-  let Move_cnt = 0; // mousemove cnt (예상경로 움직이는데 사용됨)
-  let Shootcnt = 0; // 날아가고있는 공의 개수
-  let mousestate = 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
-  let should_Add = 0; // 추가해야되는 공 cnt
+  const BLOCK_WIDTH = W / 6; // block width
+  const BLOCK_HEIGHT = H / 9; // block height
+  let moveCount = 0; // mousemove cnt (예상경로 움직이는데 사용됨)
+  let shootCount = 0; // 날아가고있는 공의 개수
+  let mouseState = 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
+  let shouldAdd = 0; // 추가해야되는 공 cnt
   let px = 0,
     py = 0; // 예상경로 line
   let tx = 0,
     ty = 0; // 예상경로 ball
-  let Balls = []; // Ball array
-  let Blocks = []; // 블록 array
-  let AddBalls = []; // 공 추가하는거 array
+  let balls = []; // Ball array
+  let blocks = []; // 블록 array
+  let addBalls = []; // 공 추가하는거 array
   let fb;
-  let fbid = null; // 바닥에 닿은 첫번째 공의 idx
+  let fbId = null; // 바닥에 닿은 첫번째 공의 idx
   let wrap = document.querySelector('#app > div'); // wrapper tag
-  let tg, ax, ay, over, B; // GetPath, DrawPath
-  let Iscallback = false;
-  let Isend = false;
+  let ax, ay, over, B; // GetPath, DrawPath
+  let isCallback = false;
+  let isEnd = false;
   /* object */
-  class ball {
+  class Ball {
     constructor(x, y) {
       this.radius = 10; // 반지름
       this.x = x ? x : W / 2; // x 좌표 값
@@ -69,12 +68,12 @@ import { SoundManager } from './audio.js';
         this.y = this.y + this.radius >= canvas.height ? canvas.height - this.radius : this.radius;
         this.dy = this.dy * -1;
       }
-      for (var i = 0, len = Blocks.length; i < len; i++) {
-        if (Blocks[i] == undefined || Math.abs(Blocks[i].X_min - this.x) > 150) continue;
-        let b = Blocks[i];
+      for (let i = 0, len = blocks.length; i < len; i++) {
+        if (blocks[i] == undefined || Math.abs(blocks[i].X_min - this.x) > 150) continue;
+        let b = blocks[i];
         let pointX = getPoint(this.x, b.X_min, b.X_max);
         let pointY = getPoint(this.y, b.Y_min, b.Y_max);
-        if (Checkdistance(this.x, this.y, pointX, pointY)) {
+        if (checkDistance(this.x, this.y, pointX, pointY)) {
           // if( (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max) ){
           // 	console.log("corner");
           // }
@@ -102,21 +101,21 @@ import { SoundManager } from './audio.js';
 
           b.cnt--;
           if (b.cnt <= 0) {
-            Blocks.splice(i, 1);
+            blocks.splice(i, 1);
             soundManager.play('brickDestruction');
           } else {
             soundManager.play('brickHit');
           }
         }
       }
-      for (var i = 0, len = AddBalls.length; i < len; i++) {
-        if (AddBalls[i] == undefined) continue;
-        var A = AddBalls[i];
-        var pointX = A.l * Block_width + Block_width / 2;
-        var pointY = A.t * Block_height + Block_height / 2;
-        if (Checkdistance(this.x, this.y, pointX, pointY, A.radius + this.radius - 1)) {
-          AddBalls.splice(i, 1);
-          should_Add++;
+      for (let i = 0, len = addBalls.length; i < len; i++) {
+        if (addBalls[i] == undefined) continue;
+        var A = addBalls[i];
+        var pointX = A.l * BLOCK_WIDTH + BLOCK_WIDTH / 2;
+        var pointY = A.t * BLOCK_HEIGHT + BLOCK_HEIGHT / 2;
+        if (checkDistance(this.x, this.y, pointX, pointY, A.radius + this.radius - 1)) {
+          addBalls.splice(i, 1);
+          shouldAdd++;
           soundManager.play('coin');
         }
       }
@@ -175,7 +174,7 @@ import { SoundManager } from './audio.js';
 
       ctx.beginPath();
       ctx.setLineDash([]);
-      ctx.arc(this.l * Block_width + Block_width / 2, this.t * Block_height + Block_height / 2, this.radius, 0, 2 * Math.PI);
+      ctx.arc(this.l * BLOCK_WIDTH + BLOCK_WIDTH / 2, this.t * BLOCK_HEIGHT + BLOCK_HEIGHT / 2, this.radius, 0, 2 * Math.PI);
       ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
       ctx.shadowOffsetX = 3.2;
       ctx.shadowOffsetY = 3.2;
@@ -184,7 +183,7 @@ import { SoundManager } from './audio.js';
 
       ctx.beginPath();
       ctx.setLineDash([]);
-      ctx.arc(this.l * Block_width + Block_width / 2, this.t * Block_height + Block_height / 2, 9, 0, Math.PI * 2);
+      ctx.arc(this.l * BLOCK_WIDTH + BLOCK_WIDTH / 2, this.t * BLOCK_HEIGHT + BLOCK_HEIGHT / 2, 9, 0, Math.PI * 2);
       ctx.fill();
       ctx.closePath();
 
@@ -193,36 +192,36 @@ import { SoundManager } from './audio.js';
   }
   /* //object */
   /* function */
-  const Checkdistance = (x1, y1, x2, y2, distance = 10) => distance >= Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)); // 두 점 사이의 거리를 구함
-  const GetPointFromDigree = (x, y, digree, len = 15) =>
+  const checkDistance = (x1, y1, x2, y2, distance = 10) => distance >= Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)); // 두 점 사이의 거리를 구함
+  const getPointFromDigree = (x, y, digree, len = 15) =>
     new Object({
       x: x + Math.cos(digree * (Math.PI / 180)) * len,
       y: y + Math.sin(digree * (Math.PI / 180)) * len,
     }); // 각도를 통해 새로운 위치 가져옴
-  const GetDigree = (x1, x2, y1, y2) => (Math.atan2(x1 - x2, y1 - y2) * 180) / Math.PI; // 점 두개로 각도 구함
+  const getDigree = (x1, x2, y1, y2) => (Math.atan2(x1 - x2, y1 - y2) * 180) / Math.PI; // 점 두개로 각도 구함
   const getPoint = (v, min, max) => {
     // return pointX or pointY
     if (v <= min || v >= max) return Math.abs(max - v) < Math.abs(min - v) ? max : min;
     return v;
   };
   const display = () => {
-    if (Isend) return;
+    if (isEnd) return;
     // display function
     clear(); // clear canvas
-    Blocks.forEach((v) => {
+    blocks.forEach((v) => {
       if (v) v.draw();
     });
-    AddBalls.forEach((v) => {
+    addBalls.forEach((v) => {
       if (v) v.draw();
     });
-    if (Iscallback) {
-      Balls.forEach((v) => {
+    if (isCallback) {
+      balls.forEach((v) => {
         if (v) v.draw();
       });
     } else {
-      if (mousestate === 2) {
+      if (mouseState === 2) {
         // 공을 날렸으면
-        Balls.forEach((v) => {
+        balls.forEach((v) => {
           if (v) v.draw();
         });
       } else {
@@ -230,21 +229,23 @@ import { SoundManager } from './audio.js';
         fb.draw();
       }
     }
-    if (mousestate === 1) DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
+    if (mouseState === 1) drawPath(moveCount); // 공 날릴려고 마우스 누르면 경로 그리기
     requestAnimationFrame(() => {
       setTimeout(display, 1000 / 60);
     });
   };
   const clear = () => ctx.clearRect(0, 0, canvas.width, canvas.height); // canvas clear
-  const GetPath = (lx, ly) => {
+  const getPath = (lx, ly) => {
     // get path
     ly *= -1;
-    for (var i = 0, len = Balls.length; i < len; i++) {
-      Balls[i].dx = lx;
-      Balls[i].dy = ly;
+    for (let i = 0, len = balls.length; i < len; i++) {
+      balls[i].dx = lx;
+      balls[i].dy = ly;
     }
-    ((ax = fb.x), (ay = fb.y));
-    ((over = false), (B = false));
+    ax = fb.x;
+    ay = fb.y;
+    over = false;
+    B = false;
     while (ax + fb.radius <= W || ax >= 0 || ay + fb.radius <= canvas.height || ay >= 0) {
       ax += lx;
       ay += ly;
@@ -270,11 +271,11 @@ import { SoundManager } from './audio.js';
           ty = ay;
           break;
         }
-        for (var i = 0, len = Blocks.length; i < len; i++) {
-          let b = Blocks[i];
+        for (let i = 0, len = blocks.length; i < len; i++) {
+          let b = blocks[i];
           let pointX = getPoint(ax, b.X_min, b.X_max);
           let pointY = getPoint(ay, b.Y_min, b.Y_max);
-          if (Checkdistance(ax, ay, pointX, pointY)) {
+          if (checkDistance(ax, ay, pointX, pointY)) {
             if (pointY == b.Y_max && b.X_min < ax && ax > b.X_max) {
               ay = b.Y_max + 10;
             } else if (pointX == b.X_max && ay > b.Y_min && b.Y_max > ay) {
@@ -289,11 +290,11 @@ import { SoundManager } from './audio.js';
       }
       if (over && B) break;
     }
-    Move_cnt++;
+    moveCount++;
   };
-  const DrawPath = (c) => {
+  const drawPath = (c) => {
     // line animation & ball draw
-    if (mousestate % 2 === 0 || Move_cnt != c)
+    if (mouseState % 2 === 0 || moveCount != c)
       // 방향이 다르거나 마우스클릭이 안돼있으면 return
       return;
     ctx.beginPath();
@@ -313,45 +314,38 @@ import { SoundManager } from './audio.js';
     canvas.addEventListener('touchstart', touchToMouseDown);
     window.addEventListener('touchmove', touchToMouseMove);
     window.addEventListener('touchend', touchToMouseUp);
-    let radio = document.querySelectorAll("input[type='radio']");
-    for (let i = 0, len = radio.length; i < len; i++) {
-      radio[i].onclick = function () {
-        FPS = this.value * 60;
-      };
-    }
     // Sound toggle 연동
     const soundToggle = document.getElementById('sound-toggle');
     if (soundToggle) {
       soundManager.setEnabled(soundToggle.checked);
-      soundToggle.addEventListener('change', (e) => {
+      soundToggle.addEventListener('change', () => {
         soundManager.setEnabled(soundToggle.checked);
       });
       // 초기 상태 반영
     }
   };
   const onMouseDown = (e) => {
-    if (mousestate === 2 || Iscallback) return; // mouseup 한 상태이면
-    mousestate = 1; // mousedown 한 상태
+    if (mouseState === 2 || isCallback) return; // mouseup 한 상태이면
+    mouseState = 1; // mousedown 한 상태
     onMouse(e);
   };
   const onMouseMove = (e) => {
-    if (mousestate === 1) onMouse(e, 1); // mousedown 한 상태이면
+    if (mouseState === 1) onMouse(e, 1); // mousedown 한 상태이면
   };
-  const onMouseUp = async (e) => {
-    if (mousestate === 1) {
+  const onMouseUp = async () => {
+    if (mouseState === 1) {
       // if mousedown
-      mousestate = 2; // mousestate= mouseup
+      mouseState = 2; // mousestate= mouseup
       ctx.lineDashOffset = 0; // 예상 경로 초기화
-      Shootcnt = Balls.length; // ball 개수만큼 Shootcnt 설정
-      Ball_update(); // 공 업데이트
-      let digree = GetDigree(fb.x + fb.dx, fb.x, fb.y - fb.dy, fb.y);
+      shootCount = balls.length; // ball 개수만큼 Shootcnt 설정
+      ballUpdate(); // 공 업데이트
+      let digree = getDigree(fb.x + fb.dx, fb.x, fb.y - fb.dy, fb.y);
       digree = digree < 0 ? -270 - digree : 90 - digree;
-      let point = GetPointFromDigree(fb.x, fb.y, digree, 30);
+      let point = getPointFromDigree(fb.x, fb.y, digree, 30);
       let tick = Math.abs(Math.floor(Math.abs(point.x - fb.x) / fb.dx));
-      for (var i = 0; i < Balls.length; i++) {
-        let s = await balls_shoot(i, tick);
+      for (let i = 0; i < balls.length; i++) {
+        await ballsShoot(i, tick);
       }
-      console.log(Balls.map((v) => v.opacity));
       turn++;
     }
   };
@@ -362,69 +356,70 @@ import { SoundManager } from './audio.js';
       x: (e.pageX * 450) / canvas.clientWidth - wrap.getBoundingClientRect().left,
       y: (e.pageY * 450) / canvas.clientHeight - wrap.getBoundingClientRect().top - TOP_BAR_HEIGHT,
     };
-    let digree = GetDigree(pos.x, fb.x, pos.y, fb.y); // get digree between mousedown_position and ball_position
+    let digree = getDigree(pos.x, fb.x, pos.y, fb.y); // get digree between mousedown_position and ball_position
 
     let min_angle = 12; // 좌우 최소 각도
     if (Math.abs(digree) < 90 + min_angle) {
       // 공과 마우스 커서 사이 각도가 100도 이하이면 최솟값으로 변경
-      let point = digree > 0 ? GetPointFromDigree(fb.x, fb.y, -min_angle, 3) : GetPointFromDigree(fb.x, fb.y, -180 + min_angle, 3);
-      GetPath(point.x - fb.x, -(point.y - fb.y));
+      let point = digree > 0 ? getPointFromDigree(fb.x, fb.y, -min_angle, 3) : getPointFromDigree(fb.x, fb.y, -180 + min_angle, 3);
+      getPath(point.x - fb.x, -(point.y - fb.y));
       return;
     }
     digree = digree < 0 ? -270 - digree : 90 - digree;
-    let point = GetPointFromDigree(fb.x, fb.y, digree, 3);
-    GetPath(point.x - fb.x, -(point.y - fb.y));
+    let point = getPointFromDigree(fb.x, fb.y, digree, 3);
+    getPath(point.x - fb.x, -(point.y - fb.y));
   };
-  const Ball_update = () => {
-    if (Blocks.length == 0 && AddBalls.length == 0 && Balls[fbid]) {
-      // console.log(fbid);
+  const ballUpdate = () => {
+    if (blocks.length == 0 && addBalls.length == 0 && balls[fbId]) {
+      // console.log(fbId);
       return smoothCallback(0);
     } else {
       // console.log(Blocks.length, AddBalls.length);
     }
-    for (var i = 0, len = Balls.length; i < len; i++) {
-      if (!Balls[i].isShoot) continue;
-      if (Balls[i].update()) {
-        Balls[i].isShoot = false;
-        if (Balls.length == Shootcnt) {
-          fbid = i;
+    for (let i = 0, len = balls.length; i < len; i++) {
+      if (!balls[i].isShoot) continue;
+      if (balls[i].update()) {
+        balls[i].isShoot = false;
+        if (balls.length == shootCount) {
+          fbId = i;
         }
-        Shootcnt--;
-        if (Shootcnt === 0) {
-          mousestate = 0;
+        shootCount--;
+        if (shootCount === 0) {
+          mouseState = 0;
           return callback();
         }
       }
     }
     setTimeout(function () {
-      return Ball_update();
+      return ballUpdate();
     }, 1000 / 144);
   };
 
   const smoothCallback = (n) => {
     if (n >= 72) {
-      Shootcnt = 0;
-      mousestate = 0;
-      for (var i = 0, len = Balls.length; i < len; i++) {
-        Balls[i].x = Balls[fbid].x;
-        Balls[i].y = Balls[fbid].y;
-        Balls[i].opacity = 1;
+      shootCount = 0;
+      mouseState = 0;
+      for (let i = 0, len = balls.length; i < len; i++) {
+        balls[i].x = balls[fbId].x;
+        balls[i].y = balls[fbId].y;
+        balls[i].opacity = 1;
       }
-      return callback();
+      callback();
       return;
     }
-    for (var i = 0, len = Balls.length; i < len; i++) {
-      if (!Balls[i].isShoot) continue;
-      if (Balls[i].update()) {
-        Balls[i].isShoot = false;
-        Balls[i].opacity = 1;
-        Shootcnt--;
-        if (Shootcnt === 0) {
-          mousestate = 0;
-          return callback();
+    for (let i = 0, len = balls.length; i < len; i++) {
+      if (!balls[i].isShoot) continue;
+      if (balls[i].update()) {
+        balls[i].isShoot = false;
+        balls[i].opacity = 1;
+        shootCount--;
+        if (shootCount === 0) {
+          mouseState = 0;
+          callback();
+          return;
         }
       } else {
-        Balls[i].opacity -= 0.01;
+        balls[i].opacity -= 0.01;
       }
     }
     setTimeout(function () {
@@ -433,19 +428,19 @@ import { SoundManager } from './audio.js';
   };
   const callback = async () => {
     // 공 날라갔다가 돌아왔을때
-    Iscallback = true;
+    isCallback = true;
     /* block, addball update */
-    Blocks = Blocks.map((v) => {
+    blocks = blocks.map((v) => {
       v.t++;
       v.Y_min += v.h;
       v.Y_max += v.h;
       return v;
     });
-    AddBalls = AddBalls.map((v, n) => {
+    addBalls = addBalls.map((v, n) => {
       v.t++;
       if (v.t == 7) {
-        AddBalls.splice(n, 1);
-        should_Add++;
+        addBalls.splice(n, 1);
+        shouldAdd++;
       }
       return v;
     });
@@ -467,13 +462,13 @@ import { SoundManager } from './audio.js';
     /* //block cnt */
     /* block */
     var bl = [];
-    for (var i = 0; i < cnt; i++) {
+    for (let i = 0; i < cnt; i++) {
       let l = Math.floor(Math.random() * 6);
       if (bl.includes(l)) {
         i--;
       } else {
         bl.push(l);
-        Blocks.push(new Block({ l: l, t: 1, cnt: turn }));
+        blocks.push(new Block({ l: l, t: 1, cnt: turn }));
       }
     }
     /* //block */
@@ -483,51 +478,51 @@ import { SoundManager } from './audio.js';
       if (bl.includes(l)) {
         recursive();
       } else {
-        AddBalls.push(new AddBall({ l: l, t: 1 }));
+        addBalls.push(new AddBall({ l: l, t: 1 }));
       }
     }
     recursive();
     /* //addvall */
     /* ball */
-    for (var i = 0, len = Balls.length; i < len; i++) {
-      Balls[i].opacity = 1;
+    for (let i = 0, len = balls.length; i < len; i++) {
+      balls[i].opacity = 1;
     }
-    for (var i = 0; i < should_Add; i++) {
-      Balls.push(new ball(Balls[fbid].x, Balls[fbid].y));
+    for (let i = 0; i < shouldAdd; i++) {
+      balls.push(new Ball(balls[fbId].x, balls[fbId].y));
     }
-    should_Add = 0;
-    if (Blocks.find((f) => f.t == 8)) return end();
-    await Ball_Gather();
+    shouldAdd = 0;
+    if (blocks.find((f) => f.t == 8)) return end();
+    await ballGather();
     // for(var i=0, len= Balls.length; i<len; i++){
-    // 	Balls[i].x= Balls[fbid].x;
-    // 	Balls[i].y= Balls[fbid].y;
+    // 	Balls[i].x= Balls[fbId].x;
+    // 	Balls[i].y= Balls[fbId].y;
     // }
     /* //ball */
     document.querySelector('.score').innerText = turn;
-    document.querySelector('.b').innerText = Balls.length;
-    Iscallback = false;
-    fbid = null;
+    document.querySelector('.b').innerText = balls.length;
+    isCallback = false;
+    fbId = null;
   };
-  const Ball_Gather = () => {
+  const ballGather = () => {
     // 공 모으는 애니메이션
     let distance = [];
     let cnt = 10;
-    for (var i = 0, len = Balls.length; i < len; i++) {
-      Balls[i].y = Balls[fbid].y;
-      let dis = fbid == i ? 0 : (Balls[fbid].x - Balls[i].x) / cnt;
+    for (let i = 0, len = balls.length; i < len; i++) {
+      balls[i].y = balls[fbId].y;
+      let dis = fbId == i ? 0 : (balls[fbId].x - balls[i].x) / cnt;
       distance.push(dis);
     }
     return new Promise((res) => {
       function recursive(n) {
-        for (var i = 0, len = Balls.length; i < len; i++) {
-          Balls[i].x += distance[i];
+        for (let i = 0, len = balls.length; i < len; i++) {
+          balls[i].x += distance[i];
         }
         setTimeout(() => {
           if (n < cnt - 1) {
             recursive(n + 1);
           } else {
-            for (var i = 0, len = Balls.length; i < len; i++) {
-              Balls[i].x = Balls[fbid].x;
+            for (let i = 0, len = balls.length; i < len; i++) {
+              balls[i].x = balls[fbId].x;
             }
             res(true);
           }
@@ -538,7 +533,7 @@ import { SoundManager } from './audio.js';
   };
   const end = () => {
     // 게임 끝났을때
-    Isend = true;
+    isEnd = true;
     canvas.removeEventListener('mousedown', onMouseDown);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
@@ -546,9 +541,9 @@ import { SoundManager } from './audio.js';
     ctx.fillRect(0, 0, W, H);
     soundManager.play('gameOver');
   };
-  const balls_shoot = (i, t) => {
-    return new Promise((res, rej) => {
-      Balls[i].isShoot = true;
+  const ballsShoot = (i, t) => {
+    return new Promise((res) => {
+      balls[i].isShoot = true;
       soundManager.play('ballLaunch');
       setTimeout(
         () => {
@@ -594,11 +589,11 @@ import { SoundManager } from './audio.js';
   };
   /* //function */
   window.onload = async () => {
-    Balls.push(new ball());
-    Blocks.push(new Block({ l: 0, t: 1, cnt: turn }));
-    Blocks.push(new Block({ l: 5, t: 1, cnt: turn }));
-    AddBalls.push(new AddBall({ l: 1, t: 1 }));
-    fb = Balls[0];
+    balls.push(new Ball());
+    blocks.push(new Block({ l: 0, t: 1, cnt: turn }));
+    blocks.push(new Block({ l: 5, t: 1, cnt: turn }));
+    addBalls.push(new AddBall({ l: 1, t: 1 }));
+    fb = balls[0];
     eve();
     display();
 
