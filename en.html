@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Play Swipe Brick Breaker — a fast-paced, addictive brick-breaking game. Swipe, aim, and break your way through endless levels right in your browser!" />
+    <title>Swipe Brick Breaker</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+        user-select: none;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        border: 1px solid #000;
+        display: block;
+        width: 100%;
+        max-width: 450px;
+      }
+      label {
+        cursor: pointer;
+      }
+      #app {
+        /* position: absolute;
+        left: 50%;
+        top: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%); */
+        display: grid;
+        width: 100vw;
+        padding: 32px 0;
+      }
+      #app > div {
+        margin: auto;
+        max-width: 100%;
+      }
+      .ball {
+        font-weight: bold;
+        color: #0064ff;
+      }
+      .sound {
+        margin-left: 20px;
+        user-select: auto;
+      }
+      #sound-toggle {
+        vertical-align: middle;
+      }
+      #disqus_thread {
+        margin-top: 200px;
+      }
+      .top {
+        height: 30px;
+        max-height: 30px;
+      }
+
+      @media (pointer: none), (pointer: coarse) {
+        #app {
+          padding: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <div class="top">
+          <span>Score: <span class="score">1</span>&nbsp;&nbsp;&nbsp;<span class="ball">Ball: <span class="b">1</span></span>
+          <label class="sound">
+            <input type="checkbox" id="sound-toggle" checked />
+            Sound ON/OFF
+          </label>
+        </div>
+        <canvas id="canvas" width="450" height="450"></canvas>
+      </div>
+    </div>
+    <div id="disqus_thread"></div>
+    <script src="js/script.js" type="module"></script>
+    <script>
+      /**
+       *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+       *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+      /*
+      var disqus_config = function () {
+      this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+      this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      };
+      */
+      (function () {
+        // DON'T EDIT BELOW THIS LINE
+        var d = document,
+          s = d.createElement('script');
+        s.src = 'https://pyjun01.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+      })();
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DD15ZV7RCN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+
+      gtag('config', 'G-DD15ZV7RCN');
+    </script>
+    <!-- Google AdSense -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5121982141414734"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
