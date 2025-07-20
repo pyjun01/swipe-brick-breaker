@@ -5,6 +5,7 @@ import { SoundManager } from './audio.js';
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
+  const TOP_BAR_HEIGHT = 30;
   let FPS = 60;
   let turn = 1;
   let W = canvas.width;
@@ -356,9 +357,10 @@ import { SoundManager } from './audio.js';
   };
   const onMouse = (e) => {
     // mousedown, mousemove event
+
     const pos = {
-      x: e.pageX - wrap.getBoundingClientRect().left,
-      y: e.pageY - wrap.getBoundingClientRect().top - document.querySelector('span').offsetHeight,
+      x: (e.pageX * 450) / canvas.clientWidth - wrap.getBoundingClientRect().left,
+      y: (e.pageY * 450) / canvas.clientHeight - wrap.getBoundingClientRect().top - TOP_BAR_HEIGHT,
     };
     let digree = GetDigree(pos.x, fb.x, pos.y, fb.y); // get digree between mousedown_position and ball_position
 
@@ -434,7 +436,6 @@ import { SoundManager } from './audio.js';
     Iscallback = true;
     /* block, addball update */
     Blocks = Blocks.map((v) => {
-      if (v.opacity != 1) v.opacity = 1;
       v.t++;
       v.Y_min += v.h;
       v.Y_max += v.h;
@@ -488,6 +489,9 @@ import { SoundManager } from './audio.js';
     recursive();
     /* //addvall */
     /* ball */
+    for (var i = 0, len = Balls.length; i < len; i++) {
+      Balls[i].opacity = 1;
+    }
     for (var i = 0; i < should_Add; i++) {
       Balls.push(new ball(Balls[fbid].x, Balls[fbid].y));
     }
@@ -501,10 +505,6 @@ import { SoundManager } from './audio.js';
     /* //ball */
     document.querySelector('.score').innerText = turn;
     document.querySelector('.b').innerText = Balls.length;
-    Blocks = Blocks.map((v) => {
-      if (v.opacity != 1) v.opacity = 1;
-      return v;
-    });
     Iscallback = false;
     fbid = null;
   };
