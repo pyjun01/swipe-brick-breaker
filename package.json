@@ -1,0 +1,23 @@
+{
+  "name": "swipe-brick-breaker",
+  "version": "1.0.0",
+  "description": "Swipe Brick Breaker",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "pyjun01",
+  "license": "MIT",
+  "packageManager": "pnpm@10.8.0",
+  "devDependencies": {
+    "@eslint/css": "^0.10.0",
+    "@eslint/js": "^9.31.0",
+    "@eslint/json": "^0.13.0",
+    "@mvlchain/eslint-config": "^1.0.4",
+    "@mvlchain/prettier-config": "^1.0.1",
+    "eslint": "^9.31.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.37.0"
+  }
+}
