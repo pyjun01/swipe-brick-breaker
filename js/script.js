@@ -386,7 +386,7 @@
   };
   const onMouse = (e) => {
     // mousedown, mousemove event
-    pos = {
+    const pos = {
       x: e.pageX - wrap.getBoundingClientRect().left,
       y:
         e.pageY -

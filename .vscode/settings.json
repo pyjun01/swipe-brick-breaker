@@ -6,7 +6,7 @@
     "typescript",
     "typescriptreact"
   ],
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "[javascript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit"
