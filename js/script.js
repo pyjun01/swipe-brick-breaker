@@ -1,4 +1,8 @@
+import { SoundManager } from "./audio";
+
 (() => {
+  const soundManager = new SoundManager();
+
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   let FPS = 60;
@@ -112,7 +116,12 @@
           }
 
           b.cnt--;
-          if (b.cnt <= 0) Blocks.splice(i, 1);
+          if (b.cnt <= 0) {
+            Blocks.splice(i, 1);
+            soundManager.play("brickDestruction");
+          } else {
+            soundManager.play("brickHit");
+          }
         }
       }
       for (var i = 0, len = AddBalls.length; i < len; i++) {
@@ -131,6 +140,7 @@
         ) {
           AddBalls.splice(i, 1);
           should_Add++;
+          soundManager.play("coin");
         }
       }
       if (this.y + this.radius >= canvas.height) {
@@ -357,6 +367,15 @@
         FPS = this.value * 60;
       };
     }
+    // Sound toggle 연동
+    const soundToggle = document.getElementById("sound-toggle");
+    if (soundToggle) {
+      soundManager.setEnabled(soundToggle.checked);
+      soundToggle.addEventListener("change", (e) => {
+        soundManager.setEnabled(soundToggle.checked);
+      });
+      // 초기 상태 반영
+    }
   };
   const onMouseDown = (e) => {
     if (mousestate === 2 || Iscallback) return; // mouseup 한 상태이면
@@ -580,10 +599,12 @@
     window.removeEventListener("mouseup", onMouseUp);
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
     ctx.fillRect(0, 0, W, H);
+    soundManager.play("gameOver");
   };
   const balls_shoot = (i, t) => {
     return new Promise((res, rej) => {
       Balls[i].isShoot = true;
+      soundManager.play("ballLaunch");
       setTimeout(
         () => {
           return res(i);
@@ -593,7 +614,7 @@
     });
   };
   /* //function */
-  window.onload = () => {
+  window.onload = async () => {
     Balls.push(new ball());
     Blocks.push(new Block({ l: 0, t: 1, cnt: turn }));
     Blocks.push(new Block({ l: 5, t: 1, cnt: turn }));
@@ -601,5 +622,16 @@
     fb = Balls[0];
     eve();
     display();
+
+    await Promise.all([
+      soundManager.loadSound("ballLaunch", "sounds/ball-launch.mp3"),
+      soundManager.loadSound(
+        "brickDestruction",
+        "sounds/brick-destruction.mp3",
+      ),
+      soundManager.loadSound("brickHit", "sounds/brick-hit.mp3"),
+      soundManager.loadSound("coin", "sounds/coin.mp3"),
+      soundManager.loadSound("gameOver", "sounds/game-over.mp3"),
+    ]);
   };
 })();
