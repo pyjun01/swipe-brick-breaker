@@ -1,29 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-	<meta charset="UTF-8">
-	<title>벽돌깨기</title>
-	<style>
-		*{user-select: none;}
-		html, body{width: 100%;height: 100%;margin: 0;padding: 0;}
-		#canvas{border: 1px solid #000;display: block;}
-		label{cursor: pointer;}
-		#app{position: absolute;left: 50%;top: 50%;-webkit-transform: translate(-50%, -50%);
-		-ms-transform: translate(-50%, -50%);
-		-o-transform: translate(-50%, -50%);
-		transform: translate(-50%, -50%);}
-		.ball{font-weight: bold;color: #0064ff;}
-	</style>
-</head>
-<body>
-	<div id="app">
-		<span>점수: <span class="score">1</span></span><span>최고 점수: <span class="h">0</span></span>&nbsp;&nbsp;&nbsp;<span class="ball">Ball: <span class="b">1</span></span>
-		<canvas id="canvas" width="450" height="450"></canvas>
-		<!-- <label for="i1">x1<input type="radio" name="speed" value="1" id="i1" checked></label>
+  <head>
+    <meta charset="UTF-8" />
+    <title>벽돌깨기</title>
+    <style>
+      * {
+        user-select: none;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        border: 1px solid #000;
+        display: block;
+      }
+      label {
+        cursor: pointer;
+      }
+      #app {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+      }
+      .ball {
+        font-weight: bold;
+        color: #0064ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <span>점수: <span class="score">1</span></span
+      ><span>최고 점수: <span class="h">0</span></span
+      >&nbsp;&nbsp;&nbsp;<span class="ball"
+        >Ball: <span class="b">1</span></span
+      >
+      <canvas id="canvas" width="450" height="450"></canvas>
+      <!-- <label for="i1">x1<input type="radio" name="speed" value="1" id="i1" checked></label>
 		<label for="i2">x2<input type="radio" name="speed" value="2" id="i2"></label>
 		<label for="i4">x4<input type="radio" name="speed" value="4" id="i4"></label>
 		<label for="i8">x8<input type="radio" name="speed" value="8" id="i8"></label> -->
-	</div>
-	<script src="js/script.js" type="module"></script>
-</body>
+    </div>
+    <script src="js/script.js" type="module"></script>
+  </body>
 </html>
