@@ -1,21 +1,20 @@
-import { SoundManager } from "./audio.js";
+import { SoundManager } from './audio.js';
 
 (() => {
   const soundManager = new SoundManager();
 
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
   let FPS = 60;
   let turn = 1;
   let W = canvas.width;
   let H = canvas.height;
   /* canvas default setting */
-  ctx.setLineDash([5, 5]);
-  ctx.strokeStyle = "#A5DDF9";
-  ctx.lineCap = "round";
+  ctx.strokeStyle = '#A5DDF9';
+  ctx.lineCap = 'round';
   ctx.lineWidth = 2;
   /* //canvas default setting */
-  const C = "#F5936C"; // default block color
+  const C = '#F5936C'; // default block color
   const Block_width = W / 6; // block width
   const Block_height = H / 9; // block height
   let Move_cnt = 0; // mousemove cnt (예상경로 움직이는데 사용됨)
@@ -31,7 +30,7 @@ import { SoundManager } from "./audio.js";
   let AddBalls = []; // 공 추가하는거 array
   let fb;
   let fbid = null; // 바닥에 닿은 첫번째 공의 idx
-  let wrap = document.querySelector("#app > div"); // wrapper tag
+  let wrap = document.querySelector('#app > div'); // wrapper tag
   let tg, ax, ay, over, B; // GetPath, DrawPath
   let Iscallback = false;
   let Isend = false;
@@ -46,11 +45,7 @@ import { SoundManager } from "./audio.js";
       this.isShoot = false; // 날아가고 있는지
       this.opacity = 1;
     }
-    draw(
-      c = `rgba(75, 188, 244, ${this.opacity || 1})`,
-      x = this.x,
-      y = this.y,
-    ) {
+    draw(c = `rgba(75, 188, 244, ${this.opacity || 1})`, x = this.x, y = this.y) {
       ctx.save();
       ctx.beginPath();
 
@@ -66,22 +61,15 @@ import { SoundManager } from "./audio.js";
       this.x += this.dx;
       this.y += this.dy;
       if (this.x + this.radius >= canvas.width || this.x <= this.radius) {
-        this.x =
-          this.x + this.radius >= canvas.width
-            ? canvas.width - this.radius
-            : this.radius;
+        this.x = this.x + this.radius >= canvas.width ? canvas.width - this.radius : this.radius;
         this.dx = this.dx * -1;
       }
       if (this.y + this.radius >= canvas.height || this.y <= this.radius) {
-        this.y =
-          this.y + this.radius >= canvas.height
-            ? canvas.height - this.radius
-            : this.radius;
+        this.y = this.y + this.radius >= canvas.height ? canvas.height - this.radius : this.radius;
         this.dy = this.dy * -1;
       }
       for (var i = 0, len = Blocks.length; i < len; i++) {
-        if (Blocks[i] == undefined || Math.abs(Blocks[i].X_min - this.x) > 150)
-          continue;
+        if (Blocks[i] == undefined || Math.abs(Blocks[i].X_min - this.x) > 150) continue;
         let b = Blocks[i];
         let pointX = getPoint(this.x, b.X_min, b.X_max);
         let pointY = getPoint(this.y, b.Y_min, b.Y_max);
@@ -92,11 +80,7 @@ import { SoundManager } from "./audio.js";
           let nx = this.x - pointX;
           let ny = this.y - pointY;
           let len = Math.sqrt(nx * nx + ny * ny); // 공과 모서리 사이 거리
-          if (
-            len <= this.radius &&
-            (pointX == b.X_min || pointX == b.X_max) &&
-            (pointY == b.Y_min || pointY == b.Y_max)
-          ) {
+          if (len <= this.radius && (pointX == b.X_min || pointX == b.X_max) && (pointY == b.Y_min || pointY == b.Y_max)) {
             nx /= len;
             ny /= len;
             let projection = this.dx * nx + this.dy * ny;
@@ -118,9 +102,9 @@ import { SoundManager } from "./audio.js";
           b.cnt--;
           if (b.cnt <= 0) {
             Blocks.splice(i, 1);
-            soundManager.play("brickDestruction");
+            soundManager.play('brickDestruction');
           } else {
-            soundManager.play("brickHit");
+            soundManager.play('brickHit');
           }
         }
       }
@@ -129,18 +113,10 @@ import { SoundManager } from "./audio.js";
         var A = AddBalls[i];
         var pointX = A.l * Block_width + Block_width / 2;
         var pointY = A.t * Block_height + Block_height / 2;
-        if (
-          Checkdistance(
-            this.x,
-            this.y,
-            pointX,
-            pointY,
-            A.radius + this.radius - 1,
-          )
-        ) {
+        if (Checkdistance(this.x, this.y, pointX, pointY, A.radius + this.radius - 1)) {
           AddBalls.splice(i, 1);
           should_Add++;
-          soundManager.play("coin");
+          soundManager.play('coin');
         }
       }
       if (this.y + this.radius >= canvas.height) {
@@ -168,25 +144,16 @@ import { SoundManager } from "./audio.js";
       ctx.beginPath();
 
       ctx.fillStyle = this.c;
-      ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
       ctx.shadowOffsetX = 3.5;
       ctx.shadowOffsetY = 3.5;
-      ctx.fillRect(
-        this.l * this.w + 1,
-        this.t * this.h + 1,
-        this.w - 2,
-        this.h - 2,
-      );
+      ctx.fillRect(this.l * this.w + 1, this.t * this.h + 1, this.w - 2, this.h - 2);
 
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 20px sans-serif";
-      ctx.textAlign = "center";
-      ctx.shadowColor = "transparent";
-      ctx.fillText(
-        this.cnt,
-        this.l * this.w + this.w / 2,
-        this.t * this.h + this.h / 2 + 6,
-      );
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'transparent';
+      ctx.fillText(this.cnt, this.l * this.w + this.w / 2, this.t * this.h + this.h / 2 + 6);
 
       ctx.closePath();
       ctx.restore();
@@ -200,34 +167,23 @@ import { SoundManager } from "./audio.js";
     }
     draw() {
       ctx.save();
-      ctx.strokeStyle = "#69db7c";
-      ctx.fillStyle = "#69db7c";
-      ctx.setLineDash([0, 0]);
+      ctx.strokeStyle = '#69db7c';
+      ctx.fillStyle = '#69db7c';
       ctx.lineWidth = 3;
       ctx.lineDashOffset = 0;
 
       ctx.beginPath();
-      ctx.arc(
-        this.l * Block_width + Block_width / 2,
-        this.t * Block_height + Block_height / 2,
-        this.radius,
-        0,
-        2 * Math.PI,
-      );
-      ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+      ctx.setLineDash([]);
+      ctx.arc(this.l * Block_width + Block_width / 2, this.t * Block_height + Block_height / 2, this.radius, 0, 2 * Math.PI);
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
       ctx.shadowOffsetX = 3.2;
       ctx.shadowOffsetY = 3.2;
       ctx.stroke();
       ctx.closePath();
 
       ctx.beginPath();
-      ctx.arc(
-        this.l * Block_width + Block_width / 2,
-        this.t * Block_height + Block_height / 2,
-        9,
-        0,
-        Math.PI * 2,
-      );
+      ctx.setLineDash([]);
+      ctx.arc(this.l * Block_width + Block_width / 2, this.t * Block_height + Block_height / 2, 9, 0, Math.PI * 2);
       ctx.fill();
       ctx.closePath();
 
@@ -236,19 +192,16 @@ import { SoundManager } from "./audio.js";
   }
   /* //object */
   /* function */
-  const Checkdistance = (x1, y1, x2, y2, distance = 10) =>
-    distance >= Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)); // 두 점 사이의 거리를 구함
+  const Checkdistance = (x1, y1, x2, y2, distance = 10) => distance >= Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)); // 두 점 사이의 거리를 구함
   const GetPointFromDigree = (x, y, digree, len = 15) =>
     new Object({
       x: x + Math.cos(digree * (Math.PI / 180)) * len,
       y: y + Math.sin(digree * (Math.PI / 180)) * len,
     }); // 각도를 통해 새로운 위치 가져옴
-  const GetDigree = (x1, x2, y1, y2) =>
-    (Math.atan2(x1 - x2, y1 - y2) * 180) / Math.PI; // 점 두개로 각도 구함
+  const GetDigree = (x1, x2, y1, y2) => (Math.atan2(x1 - x2, y1 - y2) * 180) / Math.PI; // 점 두개로 각도 구함
   const getPoint = (v, min, max) => {
     // return pointX or pointY
-    if (v <= min || v >= max)
-      return Math.abs(max - v) < Math.abs(min - v) ? max : min;
+    if (v <= min || v >= max) return Math.abs(max - v) < Math.abs(min - v) ? max : min;
     return v;
   };
   const display = () => {
@@ -291,12 +244,7 @@ import { SoundManager } from "./audio.js";
     }
     ((ax = fb.x), (ay = fb.y));
     ((over = false), (B = false));
-    while (
-      ax + fb.radius <= W ||
-      ax >= 0 ||
-      ay + fb.radius <= canvas.height ||
-      ay >= 0
-    ) {
+    while (ax + fb.radius <= W || ax >= 0 || ay + fb.radius <= canvas.height || ay >= 0) {
       ax += lx;
       ay += ly;
       if (!over) {
@@ -330,8 +278,7 @@ import { SoundManager } from "./audio.js";
               ay = b.Y_max + 10;
             } else if (pointX == b.X_max && ay > b.Y_min && b.Y_max > ay) {
               ax = b.X_max + 10;
-            } else if (pointX == b.X_min && ay > b.Y_min && b.Y_max > ay)
-              ax = b.X_min - 10;
+            } else if (pointX == b.X_min && ay > b.Y_min && b.Y_max > ay) ax = b.X_min - 10;
             tx = ax;
             ty = ay;
             B = true;
@@ -349,18 +296,19 @@ import { SoundManager } from "./audio.js";
       // 방향이 다르거나 마우스클릭이 안돼있으면 return
       return;
     ctx.beginPath();
+    ctx.setLineDash([5, 5]);
     ctx.moveTo(fb.x, fb.y);
     ctx.lineTo(px, py);
     ctx.stroke();
     ctx.closePath();
     ctx.lineDashOffset -= 1;
-    fb.draw("#7cd3ff", tx, ty);
+    fb.draw('#7cd3ff', tx, ty);
     fb.draw();
   };
   const eve = () => {
-    canvas.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
     let radio = document.querySelectorAll("input[type='radio']");
     for (let i = 0, len = radio.length; i < len; i++) {
       radio[i].onclick = function () {
@@ -368,10 +316,10 @@ import { SoundManager } from "./audio.js";
       };
     }
     // Sound toggle 연동
-    const soundToggle = document.getElementById("sound-toggle");
+    const soundToggle = document.getElementById('sound-toggle');
     if (soundToggle) {
       soundManager.setEnabled(soundToggle.checked);
-      soundToggle.addEventListener("change", (e) => {
+      soundToggle.addEventListener('change', (e) => {
         soundManager.setEnabled(soundToggle.checked);
       });
       // 초기 상태 반영
@@ -407,20 +355,14 @@ import { SoundManager } from "./audio.js";
     // mousedown, mousemove event
     const pos = {
       x: e.pageX - wrap.getBoundingClientRect().left,
-      y:
-        e.pageY -
-        wrap.getBoundingClientRect().top -
-        document.querySelector("span").offsetHeight,
+      y: e.pageY - wrap.getBoundingClientRect().top - document.querySelector('span').offsetHeight,
     };
     let digree = GetDigree(pos.x, fb.x, pos.y, fb.y); // get digree between mousedown_position and ball_position
 
     let min_angle = 12; // 좌우 최소 각도
     if (Math.abs(digree) < 90 + min_angle) {
       // 공과 마우스 커서 사이 각도가 100도 이하이면 최솟값으로 변경
-      let point =
-        digree > 0
-          ? GetPointFromDigree(fb.x, fb.y, -min_angle, 3)
-          : GetPointFromDigree(fb.x, fb.y, -180 + min_angle, 3);
+      let point = digree > 0 ? GetPointFromDigree(fb.x, fb.y, -min_angle, 3) : GetPointFromDigree(fb.x, fb.y, -180 + min_angle, 3);
       GetPath(point.x - fb.x, -(point.y - fb.y));
       return;
     }
@@ -554,8 +496,8 @@ import { SoundManager } from "./audio.js";
     // 	Balls[i].y= Balls[fbid].y;
     // }
     /* //ball */
-    document.querySelector(".score").innerText = turn;
-    document.querySelector(".b").innerText = Balls.length;
+    document.querySelector('.score').innerText = turn;
+    document.querySelector('.b').innerText = Balls.length;
     Blocks = Blocks.map((v) => {
       if (v.opacity != 1) v.opacity = 1;
       return v;
@@ -594,22 +536,22 @@ import { SoundManager } from "./audio.js";
   const end = () => {
     // 게임 끝났을때
     Isend = true;
-    canvas.removeEventListener("mousedown", onMouseDown);
-    window.removeEventListener("mousemove", onMouseMove);
-    window.removeEventListener("mouseup", onMouseUp);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    canvas.removeEventListener('mousedown', onMouseDown);
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.fillRect(0, 0, W, H);
-    soundManager.play("gameOver");
+    soundManager.play('gameOver');
   };
   const balls_shoot = (i, t) => {
     return new Promise((res, rej) => {
       Balls[i].isShoot = true;
-      soundManager.play("ballLaunch");
+      soundManager.play('ballLaunch');
       setTimeout(
         () => {
           return res(i);
         },
-        (1000 / 144) * t,
+        (1000 / 144) * t
       );
     });
   };
@@ -624,14 +566,11 @@ import { SoundManager } from "./audio.js";
     display();
 
     await Promise.all([
-      soundManager.loadSound("ballLaunch", "sounds/ball-launch.mp3"),
-      soundManager.loadSound(
-        "brickDestruction",
-        "sounds/brick-destruction.mp3",
-      ),
-      soundManager.loadSound("brickHit", "sounds/brick-hit.mp3"),
-      soundManager.loadSound("coin", "sounds/coin.mp3"),
-      soundManager.loadSound("gameOver", "sounds/game-over.mp3"),
+      soundManager.loadSound('ballLaunch', 'sounds/ball-launch.mp3'),
+      soundManager.loadSound('brickDestruction', 'sounds/brick-destruction.mp3'),
+      soundManager.loadSound('brickHit', 'sounds/brick-hit.mp3'),
+      soundManager.loadSound('coin', 'sounds/coin.mp3'),
+      soundManager.loadSound('gameOver', 'sounds/game-over.mp3'),
     ]);
   };
 })();
