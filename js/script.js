@@ -309,6 +309,9 @@ import { SoundManager } from './audio.js';
     canvas.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('touchstart', touchToMouseDown);
+    window.addEventListener('touchmove', touchToMouseMove);
+    window.addEventListener('touchend', touchToMouseUp);
     let radio = document.querySelectorAll("input[type='radio']");
     for (let i = 0, len = radio.length; i < len; i++) {
       radio[i].onclick = function () {
@@ -554,6 +557,40 @@ import { SoundManager } from './audio.js';
         (1000 / 144) * t
       );
     });
+  };
+  const touchToMouseDown = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      const touch = e.touches[0];
+      const mouseEvent = {
+        pageX: touch.pageX,
+        pageY: touch.pageY,
+      };
+      onMouseDown(mouseEvent);
+      e.preventDefault();
+    }
+  };
+  const touchToMouseMove = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      const touch = e.touches[0];
+      const mouseEvent = {
+        pageX: touch.pageX,
+        pageY: touch.pageY,
+      };
+      onMouseMove(mouseEvent);
+      e.preventDefault();
+    }
+  };
+  const touchToMouseUp = (e) => {
+    // touchend는 changedTouches 사용
+    const touch = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+    if (touch) {
+      const mouseEvent = {
+        pageX: touch.pageX,
+        pageY: touch.pageY,
+      };
+      onMouseUp(mouseEvent);
+      e.preventDefault();
+    }
   };
   /* //function */
   window.onload = async () => {
