@@ -252,6 +252,7 @@ import { SoundManager } from "./audio";
     return v;
   };
   const display = () => {
+    if (Isend) return;
     // display function
     clear(); // clear canvas
     Blocks.forEach((v) => {
@@ -276,7 +277,6 @@ import { SoundManager } from "./audio";
       }
     }
     if (mousestate === 1) DrawPath(Move_cnt); // 공 날릴려고 마우스 누르면 경로 그리기
-    if (Isend) return end();
     requestAnimationFrame(() => {
       setTimeout(display, 1000 / 60);
     });
