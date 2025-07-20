@@ -31,7 +31,7 @@ import { SoundManager } from "./audio.js";
   let AddBalls = []; // 공 추가하는거 array
   let fb;
   let fbid = null; // 바닥에 닿은 첫번째 공의 idx
-  let wrap = document.querySelector("#app"); // wrapper tag
+  let wrap = document.querySelector("#app > div"); // wrapper tag
   let tg, ax, ay, over, B; // GetPath, DrawPath
   let Iscallback = false;
   let Isend = false;
