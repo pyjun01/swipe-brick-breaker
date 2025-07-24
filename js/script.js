@@ -19,7 +19,7 @@ import { SoundManager } from './audio.js';
   const BLOCK_HEIGHT = H / 9; // block height
   let moveCount = 0; // mousemove cnt (예상경로 움직이는데 사용됨)
   let shootCount = 0; // 날아가고있는 공의 개수
-  let mouseState = 0; // 0= defualt 1= mousedown 2= mousemove 3= mouseup
+  let mouseState = 0; // 0 = defualt 1 = mousedown & mousemove 2 = mouseup
   let shouldAdd = 0; // 추가해야되는 공 cnt
   let px = 0,
     py = 0; // 예상경로 line
@@ -330,7 +330,9 @@ import { SoundManager } from './audio.js';
     onMouse(e);
   };
   const onMouseMove = (e) => {
-    if (mouseState === 1) onMouse(e, 1); // mousedown 한 상태이면
+    if (mouseState === 1) {
+      onMouse(e); // mousedown 한 상태이면
+    }
   };
   const onMouseUp = async () => {
     if (mouseState === 1) {
@@ -561,7 +563,6 @@ import { SoundManager } from './audio.js';
         pageY: touch.pageY,
       };
       onMouseDown(mouseEvent);
-      e.preventDefault();
     }
   };
   const touchToMouseMove = (e) => {
@@ -572,7 +573,9 @@ import { SoundManager } from './audio.js';
         pageY: touch.pageY,
       };
       onMouseMove(mouseEvent);
-      e.preventDefault();
+      if (mouseState === 1) {
+        e.preventDefault();
+      }
     }
   };
   const touchToMouseUp = (e) => {
@@ -584,7 +587,6 @@ import { SoundManager } from './audio.js';
         pageY: touch.pageY,
       };
       onMouseUp(mouseEvent);
-      e.preventDefault();
     }
   };
   /* //function */
