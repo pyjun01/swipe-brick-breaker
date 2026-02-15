@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Play Swipe Brick Breaker — a fast-paced, addictive brick-breaking game. Swipe, aim, and break your way through endless levels right in your browser!" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#4BBCF4" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Swipe Brick Breaker</title>
     <style>
       * {
@@ -23,10 +26,8 @@
         display: block;
         width: 100%;
         max-width: 450px;
+        aspect-ratio: 1 / 1;
         touch-action: none;
-      }
-      label {
-        cursor: pointer;
       }
       #app {
         /* position: absolute;
@@ -44,65 +45,29 @@
         margin: auto;
         max-width: 100%;
       }
-      .ball {
-        font-weight: bold;
-        color: #0064ff;
-      }
-      .sound {
-        margin-left: 20px;
-        user-select: auto;
-      }
-      #sound-toggle {
-        vertical-align: middle;
-      }
-      #disqus_thread {
-        margin-top: 200px;
-      }
-      .top {
-        height: 30px;
-        max-height: 30px;
-      }
-
       @media (pointer: none), (pointer: coarse) {
         #app {
           padding: 0;
         }
       }
     </style>
+    <script type="module" crossorigin src="./assets/en-DbGhACAR.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/script-BVh67Wa7.js">
+    <link rel="stylesheet" crossorigin href="./assets/script-BHRR4mEm.css">
   </head>
   <body>
     <div id="app">
       <div>
-        <div class="top">
-          <span>Score: <span class="score">1</span>&nbsp;&nbsp;&nbsp;<span class="ball">Ball: <span class="b">1</span></span>
-          <label class="sound">
-            <input type="checkbox" id="sound-toggle" checked />
-            Sound ON/OFF
-          </label>
+        <div class="game-wrapper">
+          <canvas id="canvas" width="450" height="450"></canvas>
         </div>
-        <canvas id="canvas" width="450" height="450"></canvas>
+        <button id="restart-btn" style="display:none; margin-top:8px; padding:8px 16px; cursor:pointer;">Restart</button>
       </div>
     </div>
-    <div id="disqus_thread"></div>
-    <script src="js/script.js" type="module"></script>
     <script>
-      /**
-       *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-       *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
-      /*
-      var disqus_config = function () {
-      this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-      this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-      };
-      */
-      (function () {
-        // DON'T EDIT BELOW THIS LINE
-        var d = document,
-          s = d.createElement('script');
-        s.src = 'https://pyjun01.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-      })();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js');
+      }
     </script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DD15ZV7RCN"></script>

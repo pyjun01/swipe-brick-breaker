@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="무료 스와이프 벽돌깨기 - 최대한 많은 벽돌을 부셔서 살아남아보세요." />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#4BBCF4" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>벽돌깨기</title>
+
     <style>
       * {
         box-sizing: border-box;
@@ -23,10 +27,8 @@
         display: block;
         width: 100%;
         max-width: 450px;
+        aspect-ratio: 1 / 1;
         touch-action: none;
-      }
-      label {
-        cursor: pointer;
       }
       #app {
         /* position: absolute;
@@ -44,44 +46,31 @@
         margin: auto;
         max-width: 100%;
       }
-      .ball {
-        font-weight: bold;
-        color: #0064ff;
-      }
-      .sound {
-        margin-left: 20px;
-        user-select: auto;
-      }
-      #sound-toggle {
-        vertical-align: middle;
-      }
-      .top {
-        height: 30px;
-        max-height: 30px;
-      }
-
       @media (pointer: none), (pointer: coarse) {
         #app {
           padding: 0;
         }
       }
     </style>
+    <script type="module" crossorigin src="./assets/main-Xm9GQ2jQ.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/script-BVh67Wa7.js">
+    <link rel="stylesheet" crossorigin href="./assets/script-BHRR4mEm.css">
   </head>
   <body>
     <div id="app">
       <div>
-        <div class="top">
-          <span>점수: <span class="score">1</span></span
-          >&nbsp;&nbsp;&nbsp;<span class="ball">Ball: <span class="b">1</span></span>
-          <label class="sound">
-            <input type="checkbox" id="sound-toggle" checked />
-            Sound ON/OFF
-          </label>
+        <div class="game-wrapper">
+          <canvas id="canvas" width="450" height="450"></canvas>
         </div>
-        <canvas id="canvas" width="450" height="450"></canvas>
+        <button id="restart-btn" style="display:none; margin-top:8px; padding:8px 16px; cursor:pointer;">다시 시작</button>
       </div>
     </div>
-    <script src="js/script.js" type="module"></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js');
+      }
+    </script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DD15ZV7RCN"></script>
     <script>
