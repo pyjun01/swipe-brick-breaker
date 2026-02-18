@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brick-breaker-v8';
+const CACHE_NAME = 'brick-breaker-v9';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Play Swipe Brick Breaker — a fast-paced, addictive brick-breaking game. Swipe, aim, and break your way through endless levels right in your browser!" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://swipebrickbreaker.com/en.html" />
+    <meta property="og:title" content="Swipe Brick Breaker" />
+    <meta property="og:description" content="Play Swipe Brick Breaker — a fast-paced, addictive brick-breaking game right in your browser!" />
+    <!-- <meta property="og:image" content="https://swipebrickbreaker.com/og-image.png" /> -->
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Swipe Brick Breaker" />
+    <meta name="twitter:description" content="Play Swipe Brick Breaker — a fast-paced, addictive brick-breaking game right in your browser!" />
+    <!-- <meta name="twitter:image" content="https://swipebrickbreaker.com/og-image.png" /> -->
     <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#4BBCF4" />
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,8 +62,7 @@
         }
       }
     </style>
-    <script type="module" crossorigin src="./assets/en-DbGhACAR.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/script-BVh67Wa7.js">
+    <script type="module" crossorigin src="./assets/script-TGT3FCHO.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/script-BHRR4mEm.css">
   </head>
   <body>
@@ -61,7 +71,10 @@
         <div class="game-wrapper">
           <canvas id="canvas" width="450" height="450"></canvas>
         </div>
-        <button id="restart-btn" style="display:none; margin-top:8px; padding:8px 16px; cursor:pointer;">Restart</button>
+        <div id="game-over-actions" style="display:none; margin-top:8px; gap:8px; justify-content:center;">
+          <button id="restart-btn" style="padding:8px 16px; cursor:pointer;">Restart</button>
+          <button id="share-btn" style="padding:8px 16px; cursor:pointer;">Share Score</button>
+        </div>
       </div>
     </div>
     <script>

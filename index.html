@@ -4,11 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="무료 스와이프 벽돌깨기 - 최대한 많은 벽돌을 부셔서 살아남아보세요." />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://swipebrickbreaker.com/" />
+    <meta property="og:title" content="스와이프 벽돌깨기" />
+    <meta property="og:description" content="무료 스와이프 벽돌깨기 - 최대한 많은 벽돌을 부셔서 살아남아보세요." />
+    <!-- <meta property="og:image" content="https://swipebrickbreaker.com/og-image.png" /> -->
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="스와이프 벽돌깨기" />
+    <meta name="twitter:description" content="무료 스와이프 벽돌깨기 - 최대한 많은 벽돌을 부셔서 살아남아보세요." />
+    <!-- <meta name="twitter:image" content="https://swipebrickbreaker.com/og-image.png" /> -->
     <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#4BBCF4" />
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>벽돌깨기</title>
-
+    <title>벽돌깨기</title>
     <style>
       * {
         box-sizing: border-box;
@@ -52,8 +62,7 @@
         }
       }
     </style>
-    <script type="module" crossorigin src="./assets/main-Xm9GQ2jQ.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/script-BVh67Wa7.js">
+    <script type="module" crossorigin src="./assets/script-TGT3FCHO.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/script-BHRR4mEm.css">
   </head>
   <body>
@@ -62,10 +71,12 @@
         <div class="game-wrapper">
           <canvas id="canvas" width="450" height="450"></canvas>
         </div>
-        <button id="restart-btn" style="display:none; margin-top:8px; padding:8px 16px; cursor:pointer;">다시 시작</button>
+        <div id="game-over-actions" style="display:none; margin-top:8px; gap:8px; justify-content:center;">
+          <button id="restart-btn" style="padding:8px 16px; cursor:pointer;">다시 시작</button>
+          <button id="share-btn" style="padding:8px 16px; cursor:pointer;">점수 공유</button>
+        </div>
       </div>
-    </div>
-
+    </div>
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js');
