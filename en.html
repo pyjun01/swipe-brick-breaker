@@ -85,6 +85,110 @@
         </div>
       </div>
     </div>
+    <!-- SEO Content (below the fold) -->
+    <main style="margin-top: 100vh; padding: 24px 16px; max-width: 700px; margin-left: auto; margin-right: auto; color: #333; line-height: 1.8;">
+      <h1 style="font-size: 24px; margin-bottom: 8px;">Swipe Brick Breaker</h1>
+      <p style="font-size: 15px; color: #555;">
+        A simple but addictive brick breaker game you can play with just a swipe. Aim and launch balls to smash numbered bricks —
+        each brick needs to be hit that many times to break. As rounds go up, bricks get tougher and the grid fills up fast.
+        No downloads, no installs. Just open your browser and start playing. Works great on mobile too.
+      </p>
+
+      <h2 style="font-size: 20px; margin-top: 40px; margin-bottom: 16px;">FAQ</h2>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">How do I play?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Just swipe in the direction you want to launch the balls. They'll bounce around and hit the bricks.
+          Each brick has a number — that's how many hits it takes to break. Multiple balls fire at once, so angle matters!
+        </p>
+      </details>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">Is it really free?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Yep, 100% free. No paywalls, no ads to unlock stuff. Just open the site and play.
+        </p>
+      </details>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">Can I play on my phone?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Absolutely! It actually feels even better on mobile since you're swiping with your finger. Works on both iPhone and Android — any browser will do.
+        </p>
+      </details>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">Do I need to install anything?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Nope. It runs right in your browser. Bookmark it if you want quick access — it'll feel just like an app.
+        </p>
+      </details>
+    </main>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Swipe Brick Breaker",
+      "alternateName": "스와이프 벽돌깨기",
+      "url": "https://swipebrickbreaker.com/en.html",
+      "description": "Free browser-based brick breaker game. Swipe to launch balls and smash bricks — no download needed.",
+      "genre": ["Arcade", "Puzzle"],
+      "gamePlatform": ["Web Browser", "Mobile Browser"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": ["en", "ko"],
+      "image": "https://swipebrickbreaker.com/og-image.png"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I play Swipe Brick Breaker?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Swipe in the direction you want to launch the balls. They bounce around and hit bricks. Each brick has a number showing how many hits it takes to break. Multiple balls fire at once, so angle matters."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Swipe Brick Breaker free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, it's 100% free. No paywalls, no ads to unlock features. Just open the site and start playing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I play on mobile?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, it works on both iPhone and Android. Any mobile browser will do, and the swipe controls feel even more natural on a touchscreen."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install an app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No installation needed. The game runs directly in your web browser. You can bookmark it for quick access."
+          }
+        }
+      ]
+    }
+    </script>
+
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js');
