@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brick-breaker-v8';
+const CACHE_NAME = 'brick-breaker-v9';
 const ASSETS = [
   '/',
   '/index.html',
@@ -25,5 +25,20 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+  // HTML: network-first (always get fresh HTML with correct hashed asset refs)
+  if (e.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+    e.respondWith(
+      fetch(e.request)
+        .then((r) => {
+          const clone = r.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
+          return r;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Other assets: cache-first
   e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
 });
