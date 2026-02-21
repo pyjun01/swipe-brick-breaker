@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Bored? Try Swipe Brick Breaker — it's free, no download needed, and way more addictive than you'd expect. Just swipe and watch bricks shatter!" />
+    <link rel="canonical" href="https://swipebrickbreaker.com/en.html" />
+    <link rel="alternate" hreflang="ko" href="https://swipebrickbreaker.com/" />
+    <link rel="alternate" hreflang="en" href="https://swipebrickbreaker.com/en.html" />
+    <link rel="alternate" hreflang="x-default" href="https://swipebrickbreaker.com/en.html" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://swipebrickbreaker.com/en.html" />
+    <meta property="og:title" content="Swipe Brick Breaker - Free Online Brick Breaker Game" />
+    <meta property="og:description" content="Bored? Try Swipe Brick Breaker — free, no download, and seriously addictive." />
+    <meta property="og:image" content="https://swipebrickbreaker.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Swipe Brick Breaker" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Swipe Brick Breaker - Free Online Brick Breaker Game" />
+    <meta name="twitter:description" content="Just one more round... Free brick breaker you can play right in your browser." />
+    <meta name="twitter:image" content="https://swipebrickbreaker.com/og-image.png" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#4BBCF4" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="naver-site-verification" content="a7152578b23a08a77a2b5636eca227365598063e" />
+    <title>Swipe Brick Breaker - Free Online Brick Breaker Game</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+        user-select: none;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        border: 1px solid #000;
+        display: block;
+        width: 100%;
+        max-width: 450px;
+        aspect-ratio: 1 / 1;
+        touch-action: none;
+      }
+      #app {
+        /* position: absolute;
+        left: 50%;
+        top: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%); */
+        display: grid;
+        width: 100vw;
+        padding: 32px 0;
+      }
+      #app > div {
+        margin: auto;
+        max-width: 100%;
+      }
+      @media (pointer: none), (pointer: coarse) {
+        #app {
+          padding: 0;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/script-DsYUUIT5.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/script-CgVwQuCj.css">
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <div class="game-wrapper">
+          <canvas id="canvas" width="450" height="450"></canvas>
+        </div>
+        <div id="game-over-actions" class="game-over-actions">
+          <button id="restart-btn" class="game-over-btn game-over-btn-primary">Restart</button>
+          <button id="share-btn" class="game-over-btn game-over-btn-secondary">Share Score</button>
+        </div>
+      </div>
+    </div>
+    <!-- SEO Content (below the fold) -->
+    <main style="margin-top: 100vh; padding: 24px 16px; max-width: 700px; margin-left: auto; margin-right: auto; color: #333; line-height: 1.8;">
+      <h1 style="font-size: 24px; margin-bottom: 8px;">Swipe Brick Breaker</h1>
+      <p style="font-size: 15px; color: #555;">
+        A simple but addictive brick breaker game you can play with just a swipe. Aim and launch balls to smash numbered bricks —
+        each brick needs to be hit that many times to break. As rounds go up, bricks get tougher and the grid fills up fast.
+        No downloads, no installs. Just open your browser and start playing. Works great on mobile too.
+      </p>
+
+      <h2 style="font-size: 20px; margin-top: 40px; margin-bottom: 16px;">FAQ</h2>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">How do I play?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Just swipe in the direction you want to launch the balls. They'll bounce around and hit the bricks.
+          Each brick has a number — that's how many hits it takes to break. Multiple balls fire at once, so angle matters!
+        </p>
+      </details>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">Is it really free?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Yep, 100% free. No paywalls, no ads to unlock stuff. Just open the site and play.
+        </p>
+      </details>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">Can I play on my phone?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Absolutely! It actually feels even better on mobile since you're swiping with your finger. Works on both iPhone and Android — any browser will do.
+        </p>
+      </details>
+
+      <details style="margin-bottom: 12px;">
+        <summary style="font-weight: bold; cursor: pointer;">Do I need to install anything?</summary>
+        <p style="margin-top: 8px; font-size: 14px; color: #555;">
+          Nope. It runs right in your browser. Bookmark it if you want quick access — it'll feel just like an app.
+        </p>
+      </details>
+    </main>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Swipe Brick Breaker",
+      "alternateName": "스와이프 벽돌깨기",
+      "url": "https://swipebrickbreaker.com/en.html",
+      "description": "Free browser-based brick breaker game. Swipe to launch balls and smash bricks — no download needed.",
+      "genre": ["Arcade", "Puzzle"],
+      "gamePlatform": ["Web Browser", "Mobile Browser"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": ["en", "ko"],
+      "image": "https://swipebrickbreaker.com/og-image.png"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I play Swipe Brick Breaker?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Swipe in the direction you want to launch the balls. They bounce around and hit bricks. Each brick has a number showing how many hits it takes to break. Multiple balls fire at once, so angle matters."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Swipe Brick Breaker free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, it's 100% free. No paywalls, no ads to unlock features. Just open the site and start playing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I play on mobile?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, it works on both iPhone and Android. Any mobile browser will do, and the swipe controls feel even more natural on a touchscreen."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install an app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No installation needed. The game runs directly in your web browser. You can bookmark it for quick access."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DD15ZV7RCN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+
+      gtag('config', 'G-DD15ZV7RCN');
+    </script>
+    <!-- Google AdSense -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5121982141414734"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
