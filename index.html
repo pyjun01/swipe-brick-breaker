@@ -28,6 +28,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="naver-site-verification" content="a7152578b23a08a77a2b5636eca227365598063e" />
     <title>스와이프 벽돌깨기 - 무료 브라우저 벽돌깨기 게임</title>
+    <script>
+      // FOUC prevention: set theme before first paint
+      (function() {
+        var t = localStorage.getItem('swipeBrickBreaker_theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
     <style>
       * {
         box-sizing: border-box;
@@ -40,9 +48,10 @@
         height: 100%;
         margin: 0;
         padding: 0;
+        background: var(--bg-page);
       }
       #canvas {
-        border: 1px solid #000;
+        border: none;
         display: block;
         width: 100%;
         max-width: 450px;
@@ -50,13 +59,6 @@
         touch-action: none;
       }
       #app {
-        /* position: absolute;
-        left: 50%;
-        top: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        -o-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%); */
         display: grid;
         width: 100vw;
         padding: 32px 0;
@@ -70,15 +72,89 @@
           padding: 0;
         }
       }
+
+      /* Loading skeleton — matches real HUD flex layout exactly */
+      #canvas { background: var(--canvas-bg); }
+      @keyframes shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+      }
+      [data-theme="dark"] { --skel-base: rgba(255,255,255,0.04); --skel-shine: rgba(255,255,255,0.10); }
+      [data-theme="light"] { --skel-base: rgba(0,0,0,0.06); --skel-shine: rgba(0,0,0,0.12); }
+      .skel {
+        background: linear-gradient(90deg,
+          var(--skel-base) 25%,
+          var(--skel-shine) 50%,
+          var(--skel-base) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.6s linear infinite;
+        border-radius: 4px;
+      }
+      /* Top bar — identical to .hud-top */
+      .loading-hud-top {
+        order: -1;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 8px 12px;
+        background: var(--bg-glass);
+      }
+      .skel-group { display: flex; flex-direction: column; gap: 2px; }
+      .skel-label { height: 12px; border-radius: 3px; }
+      .skel-ball-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+      }
+      /* Bottom bar — identical to .hud-bottom */
+      .loading-hud-bottom {
+        order: 1;
+        display: flex;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+      .skel-btn { width: 44px; height: 44px; border-radius: 50%; }
+      @media (prefers-reduced-motion: reduce) {
+        .skel { animation: none; }
+      }
     </style>
-    <script type="module" crossorigin src="/assets/script-DJMmfPJx.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/script-Cn_WlXCv.css">
+    <script type="module" crossorigin src="/assets/script-BhjsSU_K.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/script-By5TrMw9.css">
   </head>
   <body>
     <div id="app">
       <div>
         <div class="game-wrapper">
+          <!-- Loading skeleton: flex children matching real HUD layout -->
+          <div class="loading-hud-top" aria-hidden="true">
+            <div class="skel-group">
+              <div class="skel skel-label" style="width:36px"></div>
+              <div class="skel" style="width:40px;height:26px"></div>
+            </div>
+            <div class="skel-group">
+              <div class="skel skel-label" style="width:28px"></div>
+              <div class="skel" style="width:30px;height:19px"></div>
+            </div>
+            <div class="skel-group">
+              <div class="skel skel-label" style="width:30px"></div>
+              <div class="skel" style="width:20px;height:19px"></div>
+            </div>
+            <div class="skel-ball-group">
+              <div class="skel" style="width:12px;height:12px;border-radius:50%"></div>
+              <div class="skel" style="width:16px;height:20px"></div>
+            </div>
+          </div>
           <canvas id="canvas" width="450" height="450"></canvas>
+          <div class="loading-hud-bottom" aria-hidden="true">
+            <div class="skel skel-btn"></div>
+            <div class="skel skel-btn"></div>
+            <div class="skel skel-btn"></div>
+            <div class="skel skel-btn"></div>
+            <div class="skel skel-btn"></div>
+            <div class="skel skel-btn"></div>
+            <div class="skel skel-btn"></div>
+          </div>
         </div>
         <div id="game-over-actions" class="game-over-actions">
           <button id="restart-btn" class="game-over-btn game-over-btn-primary">다시 시작</button>
